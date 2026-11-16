@@ -75,7 +75,7 @@ export default function ArticleCard({
   return (
     <article className="card" data-seen={seen} data-saved={saved}>
       <div className="card-top">
-        <span className="journal">{a.journalShort}</span>
+        <span className="journal">{a.journalName}</span>
         <span className="pubdate mono">{formatDate(a.date)}</span>
         {a.isOA && <span className="badge badge-oa">Open access</span>}
         {a.type === "review" && <span className="badge badge-type">Review</span>}

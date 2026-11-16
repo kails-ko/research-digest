@@ -22,6 +22,9 @@ export default function Feed({ feed }: { feed: FeedResult }) {
 
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
   const [showJournals, setShowJournals] = useState(false);
+  // Collapsed by default: the full chip set is five rows tall and would push the
+  // feed itself below the fold on every visit.
+  const [showTopics, setShowTopics] = useState(false);
 
   // What you've read and saved lives in localStorage, which React treats as an
   // external store. The server snapshot is deliberately empty — the server has
@@ -36,6 +39,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     savedStore.getSnapshot,
     savedStore.getServerSnapshot,
   );
+
+  /** Both chip rows in the Topics panel, so "Deselect all" clears what you see. */
+  const topicPanelActive = filters.topics.length + filters.designs.length;
+
+  function deselectAllTopics() {
+    setFilters((f) => ({ ...f, topics: [], designs: [] }));
+  }
 
   function toggleIn(layer: "topics" | "designs" | "keywords" | "journals", id: string) {
     setFilters((f) => {
@@ -164,62 +174,85 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         <section className="panel">
           <div className="panel-head">
             <h2>Topics</h2>
-            <span className="filter-summary">
-              Within a row, chips add up (<b>or</b>). Across rows, they narrow (<b>and</b>).
-            </span>
-          </div>
-          <p className="hint">
-            These are OpenAlex Topics, not word searches — an article is tagged
-            &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not it
-            uses the word. The number on each chip is how many of this month&rsquo;s
-            articles it would bring in.
-          </p>
-
-          {TOPIC_GROUPS.map((g) => (
-            <div key={g.name}>
-              <span className="group-label">{g.name}</span>
-              <div className="chiprow">
-                {g.topics.map((t) => {
-                  const n = topicCounts.get(t.id) ?? 0;
-                  return (
-                    <button
-                      key={t.id}
-                      className="chip"
-                      data-accent={g.accent}
-                      data-on={filters.topics.includes(t.id)}
-                      data-empty={n === 0}
-                      title={`OpenAlex topic: ${t.openAlexName}`}
-                      aria-pressed={filters.topics.includes(t.id)}
-                      onClick={() => toggleIn("topics", t.id)}
-                    >
-                      {t.label}
-                      <span className="count">{n}</span>
-                    </button>
-                  );
-                })}
-              </div>
+            <div className="right">
+              {topicPanelActive > 0 && (
+                <>
+                  <span className="filter-summary">
+                    <b>{topicPanelActive}</b> selected
+                  </span>
+                  <button className="linkbtn" onClick={deselectAllTopics}>
+                    Deselect all
+                  </button>
+                </>
+              )}
+              <button
+                className="btn btn-quiet"
+                aria-expanded={showTopics}
+                aria-controls="topic-chips"
+                onClick={() => setShowTopics((v) => !v)}
+              >
+                {showTopics ? "Hide topics" : "Show topics"}
+              </button>
             </div>
-          ))}
+          </div>
 
-          <span className="group-label">Study design</span>
-          <div className="chiprow">
-            {DESIGN_TAGS.map((d) => {
-              const n = designCounts.get(d.id) ?? 0;
-              return (
-                <button
-                  key={d.id}
-                  className="chip"
-                  data-accent="pink"
-                  data-on={filters.designs.includes(d.id)}
-                  data-empty={n === 0}
-                  aria-pressed={filters.designs.includes(d.id)}
-                  onClick={() => toggleIn("designs", d.id)}
-                >
-                  {d.label}
-                  <span className="count">{n}</span>
-                </button>
-              );
-            })}
+          {/* Kept mounted but hidden, so chip state and scroll position survive
+              a collapse — and so the selected count above stays truthful. */}
+          <div id="topic-chips" hidden={!showTopics}>
+              <p className="hint">
+                These are OpenAlex Topics, not word searches — an article is tagged
+                &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not
+                it uses the word. The number on each chip is how many of this
+                month&rsquo;s articles it would bring in. Within a row, chips add up
+                (<b>or</b>). Across rows, they narrow (<b>and</b>).
+              </p>
+
+            {TOPIC_GROUPS.map((g) => (
+              <div key={g.name}>
+                <span className="group-label">{g.name}</span>
+                <div className="chiprow">
+                  {g.topics.map((t) => {
+                    const n = topicCounts.get(t.id) ?? 0;
+                    return (
+                      <button
+                        key={t.id}
+                        className="chip"
+                        data-accent={g.accent}
+                        data-on={filters.topics.includes(t.id)}
+                        data-empty={n === 0}
+                        title={`OpenAlex topic: ${t.openAlexName}`}
+                        aria-pressed={filters.topics.includes(t.id)}
+                        onClick={() => toggleIn("topics", t.id)}
+                      >
+                        {t.label}
+                        <span className="count">{n}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <span className="group-label">Study design</span>
+            <div className="chiprow">
+              {DESIGN_TAGS.map((d) => {
+                const n = designCounts.get(d.id) ?? 0;
+                return (
+                  <button
+                    key={d.id}
+                    className="chip"
+                    data-accent="pink"
+                    data-on={filters.designs.includes(d.id)}
+                    data-empty={n === 0}
+                    aria-pressed={filters.designs.includes(d.id)}
+                    onClick={() => toggleIn("designs", d.id)}
+                  >
+                    {d.label}
+                    <span className="count">{n}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </section>
 
@@ -278,7 +311,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                     title={j.name}
                     onClick={() => toggleIn("journals", j.id)}
                   >
-                    {j.short}
+                    {j.name}
                     <span className="count">
                       {articles.filter((a) => a.journalId === j.id).length}
                     </span>

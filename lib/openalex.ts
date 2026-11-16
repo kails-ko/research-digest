@@ -29,7 +29,6 @@ export type Article = {
   authorCount: number;
   journalId: string;
   journalName: string;
-  journalShort: string;
   date: string;
   type: string;
   isOA: boolean;
@@ -122,7 +121,6 @@ function normalize(w: OAWork): Article | null {
     authorCount: authors.length,
     journalId: journal.id,
     journalName: journal.name,
-    journalShort: journal.short,
     date: w.publication_date,
     type: w.type,
     isOA: w.open_access?.is_oa ?? false,

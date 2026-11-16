@@ -38,6 +38,11 @@ Every chip is a topic real articles in your journals carry, grouped into five
 rows: conditions, family & caregiving, identity & equity, treatment & services,
 and development & school.
 
+The panel is **collapsed by default** — the full chip set is five rows tall and
+would otherwise push the feed below the fold on every visit. The header still
+reports how many chips are selected while it's shut, and **Deselect all** clears
+both the topic and study-design rows in one click.
+
 ### 2. Study design — what topics can't tell you
 
 OpenAlex Topics describe *subject matter*, never *method*. There is no topic for
@@ -62,8 +67,8 @@ is in it rather than you guessing.
 ### 4. Lenses — one click, several chips
 
 A lens is a named standing search: "ADHD & families" applies three topic chips
-at once, "Treatment trials" applies three topics plus the randomized-trial
-design tag. These are the real replacement for retyping the same query every
+at once, "Parent training" applies four, and "Treatment trials" applies three
+topics plus the randomized-trial design tag. These are the real replacement for retyping the same query every
 week. Six ship in `LENSES` (`lib/topics.ts`); they are plain data, so add your
 own.
 
@@ -83,8 +88,9 @@ trials."
 
 Everything you'd want to change is data, in two files.
 
-**Add or remove a journal** — `lib/journals.ts`. Look the ID up rather than
-guessing it:
+**Add or remove a journal** — `lib/journals.ts`. Journal names are written out
+in full everywhere in the UI, never abbreviated, so there is only a `name` field
+to fill in. Look the ID up rather than guessing it:
 
 ```bash
 curl "https://api.openalex.org/sources?search=Journal+of+Abnormal+Child+Psychology&select=id,display_name,issn_l"

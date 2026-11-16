@@ -88,6 +88,7 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     accent: "pistachio",
     topics: [
       { id: "T10214", label: "Psychotherapy", openAlexName: "Psychotherapy Techniques and Applications" },
+      { id: "T13143", label: "Child & family therapy", openAlexName: "Child Therapy and Development" },
       { id: "T10272", label: "Access to care", openAlexName: "Mental Health Treatment and Access" },
       { id: "T11519", label: "Digital interventions", openAlexName: "Digital Mental Health Interventions" },
       { id: "T10629", label: "Implementation & policy", openAlexName: "Health Policy Implementation Science" },
@@ -205,10 +206,14 @@ export const LENSES: Lens[] = [
     topics: ["T10537", "T10585", "T11632"],
   },
   {
-    id: "equity",
-    label: "Culture & equity",
-    blurb: "Racial, ethnic, immigrant, and LGBTQ+ youth and family research",
-    topics: ["T10652", "T10156", "T10762", "T13101"],
+    id: "parent-training",
+    label: "Parent training",
+    blurb: "Parent-mediated and behavioral parent training work, and the problems it targets",
+    // T13143 is the closest OpenAlex has to a parent-training topic — it is what
+    // PCIT, video-feedback, and parent-mediated intervention papers land under.
+    // The other three widen it to the family-process and disruptive-behavior
+    // work that parent training is usually tested against.
+    topics: ["T13143", "T11632", "T10585", "T10485"],
   },
   {
     id: "prevention",
