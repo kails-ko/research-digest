@@ -1,49 +1,731 @@
+/*
+ * Brand translation for the research feed.
+ *
+ * Every value here comes from personal-brand-kit — README.md's color table and
+ * site/styles.scss. Those remain the source of truth; this is a fourth copy of
+ * the same nine hex values (the brand kit's README already tracks three others:
+ * brand-preamble.tex, handouts/R/theme_studio.R, site/R/theme_studio.R).
+ * If a hex changes there, change it here too.
+ *
+ * Dark mode is deliberately not supported: the brand kit lists it as an open,
+ * undecided question, and inventing a dark palette here would quietly make that
+ * decision. `color-scheme: light` tells the browser so explicitly rather than
+ * leaving form controls to guess.
+ */
+
+@font-face {
+  font-family: "Karla";
+  src: url("/fonts/Karla-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Karla";
+  src: url("/fonts/Karla-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Karla";
+  src: url("/fonts/Karla-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat Alternates";
+  src: url("/fonts/MontserratAlternates-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Montserrat Alternates";
+  src: url("/fonts/MontserratAlternates-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/Fraunces-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: url("/fonts/Fraunces-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("/fonts/IBMPlexMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  color-scheme: light;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  /* Anchor */
+  --indigo: #273287;
+  /* Grounds */
+  --navy: #181a4d;
+  --ground: #fcf9ed;
+  /* Chart & card extensions */
+  --light-blue: #9ab4ea;
+  --pistachio: #cac307;
+  --blush: #e990a2;
+  /* Action */
+  --amber: #ffae00;
+  --pink: #f03172;
+  --red: #e0070f;
 
-html {
-  height: 100%;
-}
+  /* Derived surfaces. Tints of the anchor over Ground — never new hues. */
+  --rule: color-mix(in srgb, var(--indigo) 18%, var(--ground));
+  --rule-strong: color-mix(in srgb, var(--indigo) 32%, var(--ground));
+  --surface: color-mix(in srgb, var(--indigo) 5%, var(--ground));
+  --muted: color-mix(in srgb, var(--navy) 62%, var(--ground));
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+  --display: "Montserrat Alternates", system-ui, sans-serif;
+  --ui: "Karla", system-ui, sans-serif;
+  --prose: "Fraunces", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
 
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Matches the brand kit's ~16px button radius. */
+  --radius: 16px;
+  --radius-sm: 10px;
 }
 
 * {
   box-sizing: border-box;
-  padding: 0;
+}
+
+html,
+body {
   margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ground);
+  color: var(--navy);
+  font-family: var(--ui);
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--display);
+  color: var(--indigo);
+  margin: 0;
+  line-height: 1.2;
 }
 
 a {
-  color: inherit;
+  color: var(--red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button {
+  font-family: var(--ui);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus states — the brand kit lists these as an open to-do, so this is a
+   first pass rather than a settled rule: Indigo ring, 2px offset, visible on
+   every interactive element including chips and cards. */
+:focus-visible {
+  outline: 3px solid var(--indigo);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px 96px;
+}
+
+/* ---------------------------------------------------------------- header */
+
+.masthead {
+  background: var(--indigo);
+  color: var(--ground);
+  padding: 36px 0 32px;
+  margin-bottom: 28px;
+}
+
+.masthead .shell {
+  padding-bottom: 0;
+}
+
+.masthead h1 {
+  color: var(--ground);
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  letter-spacing: -0.01em;
+}
+
+/* Amber as a heading/number color is only allowed on an Indigo-filled band —
+   see the brand kit's Action color table. This band is exactly that case. */
+.masthead .kicker {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin: 0 0 10px;
+}
+
+.masthead p.sub {
+  margin: 12px 0 0;
+  max-width: 62ch;
+  color: var(--ground);
+  opacity: 0.88;
+  font-size: 1.02rem;
+}
+
+.statbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  margin-top: 22px;
+  align-items: baseline;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.stat b {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1.45rem;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat span {
+  font-size: 0.9rem;
+  color: var(--ground);
+  opacity: 0.85;
+}
+
+/* ----------------------------------------------------------------- panel */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 24px;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.panel h2 {
+  font-size: 1.05rem;
+}
+
+.panel .hint {
+  font-size: 0.86rem;
+  color: var(--muted);
+  margin: 0 0 14px;
+  max-width: 76ch;
+}
+
+.group-label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  margin: 16px 0 8px;
+  display: block;
+}
+
+.chiprow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ----------------------------------------------------------------- chips */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  border: 1.5px solid var(--rule-strong);
+  background: var(--ground);
+  color: var(--navy);
+  font-family: var(--ui);
+  font-size: 0.86rem;
+  padding: 5px 13px;
+  line-height: 1.35;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.chip:hover {
+  border-color: var(--indigo);
+}
+
+/* Every chip carries its own text label, so the brand kit's colorblind and
+   grayscale findings (Amber/Pistachio/Blush collapse together) do not bite:
+   color is never the only thing distinguishing one chip from another. */
+.chip[data-accent="light-blue"][data-on="true"] { background: var(--light-blue); border-color: var(--light-blue); }
+.chip[data-accent="pistachio"][data-on="true"]  { background: var(--pistachio);  border-color: var(--pistachio); }
+.chip[data-accent="blush"][data-on="true"]      { background: var(--blush);      border-color: var(--blush); }
+.chip[data-accent="pink"][data-on="true"]       { background: var(--pink);       border-color: var(--pink); }
+.chip[data-accent="amber"][data-on="true"]      { background: var(--amber);      border-color: var(--amber); }
+.chip[data-on="true"] {
+  color: var(--navy);
+  font-weight: 700;
+}
+
+.chip .count {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.chip[data-on="true"] .count {
+  color: var(--navy);
+  opacity: 0.72;
+}
+
+.chip[data-empty="true"] {
+  opacity: 0.42;
+}
+
+/* ----------------------------------------------------------------- lenses */
+
+.lensrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lens {
+  text-align: left;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--rule-strong);
+  background: var(--ground);
+  color: var(--navy);
+  padding: 10px 14px;
+  max-width: 260px;
+}
+
+.lens strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 0.95rem;
+  color: var(--indigo);
+}
+
+.lens span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.lens[data-on="true"] {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.lens[data-on="true"] strong,
+.lens[data-on="true"] span {
+  color: var(--navy);
+}
+
+/* ----------------------------------------------------------------- buttons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--amber);
+  color: var(--navy);
+  font-weight: 700;
+  border: 1.5px solid var(--amber);
+  border-radius: var(--radius);
+  padding: 7px 16px;
+  text-decoration: none;
+  font-size: 0.88rem;
+}
+
+.btn:hover {
+  opacity: 0.9;
+}
+
+.btn-quiet {
+  background: transparent;
+  border-color: var(--rule-strong);
+  color: var(--indigo);
+  font-weight: 700;
+}
+
+.btn-quiet:hover {
+  border-color: var(--indigo);
+  opacity: 1;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ----------------------------------------------------------------- toolbar */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0 18px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: var(--ground);
+  z-index: 5;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.segmented button {
+  border: 0;
+  background: transparent;
+  color: var(--navy);
+  padding: 5px 15px;
+  font-size: 0.85rem;
+}
+
+.segmented button[data-on="true"] {
+  background: var(--indigo);
+  color: var(--ground);
+  font-weight: 700;
+}
+
+.toolbar .right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-summary {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.filter-summary b {
+  font-family: var(--mono);
+  color: var(--indigo);
+}
+
+/* ----------------------------------------------------------------- feed */
+
+.datehead {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--indigo);
+  margin: 30px 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.datehead::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+.card {
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--indigo);
+  border-radius: var(--radius-sm);
+  background: var(--ground);
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+
+.card[data-seen="true"] {
+  opacity: 0.58;
+  border-left-color: var(--rule-strong);
+}
+
+.card[data-saved="true"] {
+  border-left-color: var(--pink);
+}
+
+.card-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.journal {
+  font-family: var(--ui);
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--indigo);
+}
+
+.pubdate {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.badge {
+  font-family: var(--ui);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--navy);
+  background: var(--pistachio);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.badge-oa {
+  background: var(--light-blue);
+}
+
+.badge-type {
+  background: var(--blush);
+}
+
+.card h3 {
+  font-size: 1.12rem;
+  line-height: 1.32;
+  margin-bottom: 6px;
+}
+
+.authors {
+  font-size: 0.86rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.abstract {
+  font-family: var(--prose);
+  font-size: 0.95rem;
+  line-height: 1.62;
+  color: var(--navy);
+  margin: 10px 0 12px;
+  max-width: 78ch;
+}
+
+.abstract mark {
+  background: var(--amber);
+  color: var(--navy);
+  padding: 0 2px;
+  border-radius: 3px;
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.tag {
+  font-size: 0.75rem;
+  border-radius: 999px;
+  padding: 2px 9px;
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  color: var(--navy);
+}
+
+.tag[data-match="true"] {
+  background: var(--light-blue);
+  border-color: var(--light-blue);
+  font-weight: 700;
+}
+
+.tag-design {
+  background: transparent;
+  border-color: var(--pink);
+  color: var(--navy);
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+}
+
+.linkbtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--indigo);
+  font-size: 0.84rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.linkbtn:hover {
+  color: var(--red);
+}
+
+.doi {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* ----------------------------------------------------------------- empty */
+
+.empty {
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 40px 28px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.empty h3 {
+  margin-bottom: 8px;
+}
+
+.notice {
+  border-radius: var(--radius);
+  background: var(--blush);
+  color: var(--navy);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.notice strong {
+  font-family: var(--display);
+}
+
+/* ----------------------------------------------------------------- footer */
+
+.foot {
+  margin-top: 56px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ----------------------------------------------------------------- mobile */
+
+@media (max-width: 720px) {
+  .shell {
+    padding: 0 16px 72px;
+  }
+  .masthead {
+    padding: 26px 0 24px;
+  }
+  .toolbar {
+    position: static;
+  }
+  .lens {
+    max-width: none;
+    flex: 1 1 100%;
+  }
+  .doi {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
+
+/* Article titles are headings, so they take the anchor color, not the Red
+   link color — the brand kit scopes Red to "a link inline within a sentence,"
+   which a card title is not. Underline appears on hover so it still reads as
+   clickable. */
+.card h3 a {
+  color: var(--indigo);
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+.card h3 a:hover,
+.card h3 a:focus-visible {
+  color: var(--red);
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }

@@ -1,69 +1,50 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+import { Suspense } from "react";
+import { cacheLife } from "next/cache";
+import Feed from "@/components/Feed";
+import { fetchFeed } from "@/lib/openalex";
+import { JOURNALS } from "@/lib/journals";
 
-export default function Home() {
+/**
+ * The whole month is fetched once here, on the server, and handed to the client
+ * as a single payload. Every filter in the UI then runs against that payload in
+ * memory — no chip click costs a network request, and OpenAlex sees one call an
+ * hour rather than one per interaction.
+ */
+async function FeedLoader() {
+  "use cache";
+  // Re-fetch roughly hourly. OpenAlex updates throughout the day, but a feed
+  // scoped to the last 30 days does not change meaningfully faster than that.
+  cacheLife("hours");
+  const feed = await fetchFeed();
+  return <Feed feed={feed} />;
+}
+
+export default function Page() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>
-            To get started, edit the{" "}
-            <code className={styles.code}>page.tsx</code> file.
-          </h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <Suspense fallback={<Skeleton />}>
+      <FeedLoader />
+    </Suspense>
+  );
+}
+
+function Skeleton() {
+  return (
+    <>
+      <header className="masthead">
+        <div className="shell">
+          <p className="kicker">Child, family &amp; clinical psychology</p>
+          <h1>Research Feed</h1>
+          <p className="sub">
+            Loading the last 30 days across {JOURNALS.length} journals&hellip;
           </p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </header>
+      <div className="shell">
+        <div className="empty">
+          <h3>Fetching from OpenAlex</h3>
+          <p>This takes a second or two on a cold load, then it&rsquo;s cached.</p>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   );
 }
