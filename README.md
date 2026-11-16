@@ -60,7 +60,8 @@ abstract (about 60% of a given month — many publishers withhold them).
 
 OpenAlex also attaches free-form **keywords** to most works (~97% of this
 month's set). The app counts them across whatever came back and offers the most
-common as chips. This row changes every time the feed refreshes, so it surfaces
+common in a checkbox dropdown (tick several at once; "Deselect all" clears
+them). This row changes every time the feed refreshes, so it surfaces
 terms you wouldn't have thought to search for — it's the feed telling you what
 is in it rather than you guessing.
 
@@ -105,6 +106,15 @@ curl "https://api.openalex.org/topics?search=school+refusal&select=id,display_na
 **Change the window** — `WINDOW_DAYS` in `lib/openalex.ts` (currently 30).
 
 **Add a lens** — `LENSES` in `lib/topics.ts`.
+
+**Note on the five topic category headings** (Conditions & presenting problems,
+Family & caregiving, and so on): those are *hand-made in `lib/topics.ts`*, not
+OpenAlex's. OpenAlex does have a real hierarchy — topic → subfield → field →
+domain — but it is organized for bibliometrics, not clinical work: ADHD sits
+under Medicine, autism under Neuroscience, family dynamics under Demography,
+and psychometrics under Decision Sciences. Grouping by it would scatter this
+feed across four domains, so the headings are editorial. The topic IDs and
+names underneath them are OpenAlex's and unchanged.
 
 ---
 

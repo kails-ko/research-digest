@@ -730,3 +730,153 @@ button {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+
+/* ------------------------------------------------------------ multiselect */
+
+/* A checkbox dropdown, used where a chip row would be a wall: this month's
+   keywords and the 23 journals. The popover is absolutely positioned inside a
+   relative wrapper, so it overlays the page instead of pushing it around. */
+.ms {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ms-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--ground);
+  color: var(--navy);
+  font-size: 0.88rem;
+  padding: 7px 14px;
+  min-width: 190px;
+  justify-content: space-between;
+}
+
+.ms-trigger:hover {
+  border-color: var(--indigo);
+}
+
+.ms-trigger[data-on="true"] {
+  background: var(--amber);
+  border-color: var(--amber);
+  font-weight: 700;
+}
+
+.ms-caret {
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.ms-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  width: min(380px, calc(100vw - 48px));
+  background: var(--ground);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius);
+  /* No pure black in the kit, so the shadow is a transparent Navy. */
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--navy) 22%, transparent);
+  overflow: hidden;
+}
+
+.ms-pop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.ms-pop-count {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.ms-pop-head .linkbtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
+.ms-list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 6px;
+}
+
+.ms-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  font-size: 0.87rem;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.ms-row:hover {
+  background: var(--surface);
+}
+
+.ms-row[data-on="true"] {
+  background: var(--light-blue);
+  font-weight: 700;
+}
+
+.ms-row[data-empty="true"]:not([data-on="true"]) .ms-label,
+.ms-row[data-empty="true"]:not([data-on="true"]) .count {
+  opacity: 0.45;
+}
+
+.ms-row input[type="checkbox"] {
+  accent-color: var(--indigo);
+  width: 16px;
+  height: 16px;
+  flex: none;
+  cursor: pointer;
+}
+
+.ms-label {
+  flex: 1;
+}
+
+.ms-row .count {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.ms-row[data-on="true"] .count {
+  color: var(--navy);
+  opacity: 0.72;
+}
+
+@media (max-width: 720px) {
+  /* Let the header row wrap so the trigger gets a line of its own and can
+     stretch; without this the flex row shrinks it to its text width. */
+  .panel-head .right {
+    width: 100%;
+  }
+  .ms {
+    width: 100%;
+  }
+  .ms-trigger {
+    flex: 1;
+  }
+  /* NOT width:100% — the popover's containing block is .ms, so a percentage
+     would size it to the trigger rather than to the screen. */
+  .ms-pop {
+    right: 0;
+    left: auto;
+    width: min(360px, calc(100vw - 32px));
+  }
+}

@@ -73,7 +73,7 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     ],
   },
   {
-    name: "Identity, culture & equity",
+    name: "Identity, culture, & equity",
     accent: "pink",
     topics: [
       { id: "T10652", label: "Racial & ethnic identity", openAlexName: "Racial and Ethnic Identity Research" },
@@ -84,7 +84,7 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     ],
   },
   {
-    name: "Treatment, services & prevention",
+    name: "Treatment, services, & prevention",
     accent: "pistachio",
     topics: [
       { id: "T10214", label: "Psychotherapy", openAlexName: "Psychotherapy Techniques and Applications" },
@@ -99,7 +99,7 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     ],
   },
   {
-    name: "Development, school & context",
+    name: "Development, school, & context",
     accent: "amber",
     topics: [
       { id: "T10182", label: "Child & adolescent development", openAlexName: "Child and Adolescent Psychosocial and Emotional Development" },

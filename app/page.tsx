@@ -32,7 +32,7 @@ function Skeleton() {
     <>
       <header className="masthead">
         <div className="shell">
-          <p className="kicker">Child, family &amp; clinical psychology</p>
+          <p className="kicker">Child, family, &amp; clinical psychology</p>
           <h1>Research Feed</h1>
           <p className="sub">
             Loading the last 30 days across {JOURNALS.length} journals&hellip;

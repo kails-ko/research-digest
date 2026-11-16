@@ -16,12 +16,12 @@ import { DESIGN_TAGS, LENSES, TOPIC_GROUPS } from "@/lib/topics";
 import { JOURNALS } from "@/lib/journals";
 import { savedStore, seenStore } from "@/lib/idStore";
 import ArticleCard from "./ArticleCard";
+import MultiSelect from "./MultiSelect";
 
 export default function Feed({ feed }: { feed: FeedResult }) {
   const articles = useMemo(() => decorate(feed.articles), [feed.articles]);
 
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
-  const [showJournals, setShowJournals] = useState(false);
   // Collapsed by default: the full chip set is five rows tall and would push the
   // feed itself below the fold on every visit.
   const [showTopics, setShowTopics] = useState(false);
@@ -104,7 +104,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     <>
       <header className="masthead">
         <div className="shell">
-          <p className="kicker">Child, family &amp; clinical psychology</p>
+          <p className="kicker">Child, family, &amp; clinical psychology</p>
           <h1>Research Feed</h1>
           <p className="sub">
             Everything published in the last 30 days across {JOURNALS.length} journals,
@@ -259,31 +259,28 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         {/* ------------------------------------------------ suggested */}
         {suggested.length > 0 && (
           <section className="panel">
-            <h2>Showing up this month</h2>
+            <div className="panel-head">
+              <h2>Showing up this month</h2>
+              <div className="right">
+                <MultiSelect
+                  placeholder="Pick keywords"
+                  noun="keyword"
+                  options={suggested.map((s) => ({
+                    value: s.key,
+                    label: s.label,
+                    count: keywordCounts.get(s.key) ?? 0,
+                  }))}
+                  selected={filters.keywords}
+                  onToggle={(v) => toggleIn("keywords", v)}
+                  onClear={() => setFilters((f) => ({ ...f, keywords: [] }))}
+                />
+              </div>
+            </div>
             <p className="hint">
               The keywords OpenAlex attached to this month&rsquo;s articles, most common
-              first. This row changes with the feed, so it surfaces terms you
+              first. This list changes with the feed, so it surfaces terms you
               wouldn&rsquo;t have thought to search for.
             </p>
-            <div className="chiprow">
-              {suggested.map((s) => {
-                const n = keywordCounts.get(s.key) ?? 0;
-                return (
-                  <button
-                    key={s.key}
-                    className="chip"
-                    data-accent="pistachio"
-                    data-on={filters.keywords.includes(s.key)}
-                    data-empty={n === 0}
-                    aria-pressed={filters.keywords.includes(s.key)}
-                    onClick={() => toggleIn("keywords", s.key)}
-                  >
-                    {s.label}
-                    <span className="count">{n}</span>
-                  </button>
-                );
-              })}
-            </div>
           </section>
         )}
 
@@ -291,35 +288,24 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         <section className="panel">
           <div className="panel-head">
             <h2>Journals</h2>
-            <button className="linkbtn" onClick={() => setShowJournals((v) => !v)}>
-              {showJournals ? "Hide" : `Show all ${JOURNALS.length}`}
-            </button>
+            <div className="right">
+              <MultiSelect
+                placeholder={`All ${JOURNALS.length} journals`}
+                noun="journal"
+                options={JOURNALS.map((j) => ({
+                  value: j.id,
+                  label: j.name,
+                  count: articles.filter((a) => a.journalId === j.id).length,
+                }))}
+                selected={filters.journals}
+                onToggle={(v) => toggleIn("journals", v)}
+                onClear={() => setFilters((f) => ({ ...f, journals: [] }))}
+              />
+            </div>
           </div>
-          {showJournals && (
-            <>
-              <p className="hint">
-                No selection means all of them. Click to narrow to a few.
-              </p>
-              <div className="chiprow">
-                {JOURNALS.map((j) => (
-                  <button
-                    key={j.id}
-                    className="chip"
-                    data-accent="light-blue"
-                    data-on={filters.journals.includes(j.id)}
-                    aria-pressed={filters.journals.includes(j.id)}
-                    title={j.name}
-                    onClick={() => toggleIn("journals", j.id)}
-                  >
-                    {j.name}
-                    <span className="count">
-                      {articles.filter((a) => a.journalId === j.id).length}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
+          <p className="hint">
+            No selection means all of them. Tick a few to narrow the feed.
+          </p>
         </section>
 
         {/* ------------------------------------------------ toolbar */}
