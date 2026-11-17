@@ -34,9 +34,16 @@ which topics actually occur in these 34 journals over the last 12 months:
 curl "https://api.openalex.org/works?filter=primary_location.source.id:S108595589|S60711021,from_publication_date:2025-11-16&group_by=topics.id&per-page=200"
 ```
 
-Every chip is a topic real articles in your journals carry, grouped into five
-rows: conditions, family & caregiving, identity & equity, treatment & services,
-and development & school.
+Every chip corresponds to something real articles in these journals carry,
+grouped into eight rows: Diagnoses & clinical concerns, Family & parenting,
+Identity/culture/equity, Interventions, Services/systems/prevention, Child
+Development, Emotion/cognition/coping, and Measurement & methods.
+
+The split between **Interventions** and **Services, systems, & prevention** is
+deliberate: what you do with a client and how care is organised are different
+literatures. So is the split between **Child Development** and **Emotion,
+cognition, & coping** — the second holds processes rather than developmental
+content.
 
 The panel is **collapsed by default** — the full chip set is five rows tall and
 would otherwise push the feed below the fold on every visit. The header still

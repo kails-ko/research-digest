@@ -59,19 +59,29 @@ export type TopicGroup = {
 
 export const TOPIC_GROUPS: TopicGroup[] = [
   {
-    name: "Conditions & presenting problems",
+    name: "Diagnoses & clinical concerns",
     accent: "light-blue",
     topics: [
       { id: "T10537", label: "ADHD", openAlexName: "Attention Deficit Hyperactivity Disorder" },
-      { id: "T10853", label: "Anxiety & depression", openAlexName: "Anxiety, Depression, Psychometrics, Treatment, Cognitive Processes" },
-      { id: "T10106", label: "Autism", openAlexName: "Autism Spectrum Disorder Research" },
-      { id: "T10426", label: "Abuse & maltreatment", openAlexName: "Child Abuse and Trauma" },
-      { id: "T10242", label: "PTSD", openAlexName: "Posttraumatic Stress Disorder Research" },
-      { id: "T10376", label: "Suicide & self-harm", openAlexName: "Suicide and Self-Harm Studies" },
-      { id: "T11123", label: "OCD", openAlexName: "Obsessive-Compulsive Spectrum Disorders" },
-      { id: "T10263", label: "Eating disorders", openAlexName: "Eating Disorders and Behaviors" },
-      { id: "T10043", label: "Substance use", openAlexName: "Substance Abuse Treatment and Outcomes" },
-      { id: "T10485", label: "Bullying & aggression", openAlexName: "Bullying, Victimization, and Aggression" },
+      {
+        // Split from the old "Anxiety & depression" chip. T10853 leads with
+        // anxiety ("Anxiety, Depression, Psychometrics…"), so it anchors this
+        // one while Depression keeps the treatment topic plus its keywords.
+        id: "kw:anxiety",
+        label: "Anxiety",
+        openAlexName: 'OpenAlex topic "Anxiety, Depression, Psychometrics, Treatment, Cognitive Processes" plus the anxiety keywords',
+        kind: "keyword",
+        topics: ["T10853"],
+        keywords: [
+          "anxiety",
+          "anxiety disorders",
+          "anxiety symptoms",
+          "childhood anxiety",
+          "social anxiety",
+          "separation anxiety",
+          "generalized anxiety disorder",
+        ],
+      },
       {
         id: "kw:depression",
         label: "Depression",
@@ -89,6 +99,36 @@ export const TOPIC_GROUPS: TopicGroup[] = [
           "maternal depression",
         ],
       },
+      {
+        // ODD, CD, and the traits that travel with them. OpenAlex has no topic
+        // for disruptive behaviour — searching returns only the general child
+        // development topic — so this is keyword-only.
+        id: "kw:disruptive",
+        label: "Disruptive behaviours",
+        openAlexName:
+          'OpenAlex keywords: "oppositional defiant disorder", "conduct disorder", "conduct problems", "disruptive behavior", "callous-unemotional traits", "antisocial behavior"',
+        kind: "keyword",
+        // Deliberately excludes "externalizing problems" (406 uses, but a broad
+        // dimension rather than these disorders) and "aggression" (already its
+        // own chip below). Add them here if you want the wider read.
+        keywords: [
+          "oppositional defiant disorder",
+          "conduct disorder",
+          "conduct problems",
+          "disruptive behavior",
+          "disruptive behavior disorders",
+          "callous-unemotional traits",
+          "antisocial behavior",
+        ],
+      },
+      { id: "T10106", label: "Autism", openAlexName: "Autism Spectrum Disorder Research" },
+      { id: "T10426", label: "Abuse & maltreatment", openAlexName: "Child Abuse and Trauma" },
+      { id: "T10242", label: "PTSD", openAlexName: "Posttraumatic Stress Disorder Research" },
+      { id: "T10376", label: "Suicide & self-harm", openAlexName: "Suicide and Self-Harm Studies" },
+      { id: "T11123", label: "OCD", openAlexName: "Obsessive-Compulsive Spectrum Disorders" },
+      { id: "T10263", label: "Eating disorders", openAlexName: "Eating Disorders and Behaviors" },
+      { id: "T10043", label: "Substance use", openAlexName: "Substance Abuse Treatment and Outcomes" },
+      { id: "T10485", label: "Bullying & aggression", openAlexName: "Bullying, Victimization, and Aggression" },
       { id: "T10316", label: "Sleep", openAlexName: "Sleep and related disorders" },
       {
         id: "kw:aces",
@@ -107,7 +147,7 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     ],
   },
   {
-    name: "Family & caregiving",
+    name: "Family & parenting",
     accent: "blush",
     topics: [
       { id: "T10585", label: "Family dynamics", openAlexName: "Family Dynamics and Relationships" },
@@ -144,16 +184,10 @@ export const TOPIC_GROUPS: TopicGroup[] = [
         openAlexName:
           'OpenAlex topics "Migration, Health and Trauma" and "Migration, Refugees, and Integration"',
         kind: "keyword",
-        // T10762 carries almost all of it in these journals (196 works over two
-        // years); T10216 adds the refugee and integration work (21).
         topics: ["T10762", "T10216"],
         keywords: [],
       },
       {
-        // 4. Acculturation. No OpenAlex Topic covers it — searching topics for
-        // "acculturation" returns racial identity and expatriate research — but
-        // it is a real keyword in these journals, just below the frequency
-        // cutoff that the "Hot this month" list uses.
         id: "kw:acculturation",
         label: "Acculturation",
         openAlexName: 'OpenAlex keywords: "acculturation", "acculturation gap", "cultural adaptation"',
@@ -172,7 +206,9 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     ],
   },
   {
-    name: "Treatment, services, & prevention",
+    // What you do with a client, kept apart from how care is organised — they
+    // are different literatures you would search on different days.
+    name: "Interventions",
     accent: "pistachio",
     topics: [
       { id: "T10214", label: "Psychotherapy", openAlexName: "Psychotherapy Techniques and Applications" },
@@ -189,29 +225,46 @@ export const TOPIC_GROUPS: TopicGroup[] = [
         label: "CBT",
         openAlexName: 'OpenAlex keyword: "cognitive behavioral therapy"',
         kind: "keyword",
-        // Both spellings; OpenAlex normalizes most to the American one.
         keywords: ["cognitive behavioral therapy", "cognitive behavioural therapy"],
       },
-      { id: "T10272", label: "Access to care", openAlexName: "Mental Health Treatment and Access" },
       { id: "T11519", label: "Digital interventions", openAlexName: "Digital Mental Health Interventions" },
-      { id: "T10629", label: "Implementation & policy", openAlexName: "Health Policy Implementation Science" },
       { id: "T10708", label: "Mindfulness", openAlexName: "Mindfulness and Compassion Interventions" },
+    ],
+  },
+  {
+    name: "Services, systems, & prevention",
+    accent: "amber",
+    topics: [
+      { id: "T10272", label: "Access to care", openAlexName: "Mental Health Treatment and Access" },
+      { id: "T10629", label: "Implementation & policy", openAlexName: "Health Policy Implementation Science" },
       { id: "T11295", label: "Counseling & supervision", openAlexName: "Counseling Practices and Supervision" },
       { id: "T11028", label: "Social work practice", openAlexName: "Social Work Education and Practice" },
     ],
   },
   {
-    name: "Development, school, & context",
-    accent: "amber",
+    name: "Child Development",
+    accent: "light-blue",
     topics: [
       { id: "T10182", label: "Child & adolescent development", openAlexName: "Child and Adolescent Psychosocial and Emotional Development" },
       { id: "T13521", label: "Psychosocial factors in youth", openAlexName: "Psychosocial Factors Impacting Youth" },
       { id: "T10589", label: "Early childhood education", openAlexName: "Early Childhood Education and Development" },
+      { id: "T10730", label: "Language development", openAlexName: "Language Development and Disorders" },
       { id: "T10355", label: "Teens & technology", openAlexName: "Impact of Technology on Adolescents" },
       { id: "T12060", label: "Kids & digital media", openAlexName: "Child Development and Digital Technology" },
-      { id: "T10730", label: "Language development", openAlexName: "Language Development and Disorders" },
       { id: "T12831", label: "School health", openAlexName: "School Health and Nursing Education" },
-      { id: "T11761", label: "Resilience", openAlexName: "Resilience and Mental Health" },
+      {
+        id: "kw:trajectories",
+        label: "Developmental trajectories",
+        openAlexName: 'OpenAlex keyword: "developmental trajectories"',
+        kind: "keyword",
+        keywords: ["developmental trajectories", "developmental trajectory"],
+      },
+    ],
+  },
+  {
+    name: "Emotion, cognition, & coping",
+    accent: "blush",
+    topics: [
       {
         id: "kw:emotion-regulation",
         label: "Emotion regulation",
@@ -220,8 +273,6 @@ export const TOPIC_GROUPS: TopicGroup[] = [
         keywords: [
           "emotion regulation",
           "emotional dysregulation",
-          // Variants below the top-200 cutoff when this was checked, so they
-          // are included defensively — harmless if OpenAlex never uses them.
           "emotional regulation",
           "emotion dysregulation",
           "emotion regulation difficulties",
@@ -234,15 +285,72 @@ export const TOPIC_GROUPS: TopicGroup[] = [
         kind: "keyword",
         keywords: ["executive function", "executive functioning", "executive functions"],
       },
-      {
-        id: "kw:trajectories",
-        label: "Developmental trajectories",
-        openAlexName: 'OpenAlex keyword: "developmental trajectories"',
-        kind: "keyword",
-        keywords: ["developmental trajectories", "developmental trajectory"],
-      },
       { id: "T14104", label: "Neuropsychology", openAlexName: "Developmental and Educational Neuropsychology" },
+      { id: "T11761", label: "Resilience", openAlexName: "Resilience and Mental Health" },
+    ],
+  },
+  {
+    // Study design and psychometrics. Every chip here was picked from the
+    // keywords that actually recur in these 34 journals, with its two-year
+    // count noted, rather than from a list of methods that sounded plausible.
+    name: "Measurement & methods",
+    accent: "pistachio",
+    topics: [
       { id: "T10467", label: "Psychometrics", openAlexName: "Psychometric Methodologies and Testing" },
+      {
+        id: "kw:invariance",
+        label: "Measurement invariance",
+        openAlexName: 'OpenAlex keyword: "measurement invariance" (146 uses over two years)',
+        kind: "keyword",
+        keywords: ["measurement invariance", "factorial invariance"],
+      },
+      {
+        id: "kw:validation",
+        label: "Scale development & validation",
+        openAlexName:
+          'OpenAlex keywords: "psychometric properties" (109), "psychometric validation" (100), "scale development" (88)',
+        kind: "keyword",
+        keywords: [
+          "psychometric properties",
+          "psychometric validation",
+          "scale development",
+          "validation",
+          "factor structure",
+        ],
+      },
+      {
+        id: "kw:latent",
+        label: "Latent class & profiles",
+        openAlexName: 'OpenAlex keywords: "latent profile analysis" (32), "latent class analysis" (24)',
+        kind: "keyword",
+        keywords: ["latent profile analysis", "latent class analysis", "mixture modeling"],
+      },
+      {
+        id: "kw:ema",
+        label: "Daily diary & EMA",
+        openAlexName: 'OpenAlex keyword: "ecological momentary assessment" (120 uses over two years)',
+        kind: "keyword",
+        keywords: [
+          "ecological momentary assessment",
+          "experience sampling",
+          "daily diary",
+          "intensive longitudinal data",
+        ],
+      },
+      {
+        id: "kw:network",
+        label: "Network analysis",
+        openAlexName: 'OpenAlex keyword: "network analysis" (26 uses over two years)',
+        kind: "keyword",
+        keywords: ["network analysis", "psychological networks"],
+      },
+      {
+        id: "kw:irt",
+        label: "Item response theory",
+        openAlexName: 'OpenAlex keyword: "item response theory" (15 uses over two years)',
+        kind: "keyword",
+        keywords: ["item response theory", "rasch model"],
+      },
     ],
   },
 ];
