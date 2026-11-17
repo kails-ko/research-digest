@@ -68,6 +68,20 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       { id: "T10485", label: "Bullying & aggression", openAlexName: "Bullying, Victimization, and Aggression" },
       { id: "T11071", label: "Depression treatment", openAlexName: "Treatment of Major Depression" },
       { id: "T10316", label: "Sleep", openAlexName: "Sleep and related disorders" },
+      {
+        id: "kw:aces",
+        label: "Adverse childhood experiences",
+        openAlexName: 'OpenAlex keyword: "adverse childhood experiences"',
+        kind: "keyword",
+        keywords: ["adverse childhood experiences", "aces"],
+      },
+      {
+        id: "kw:comorbidity",
+        label: "Comorbidity",
+        openAlexName: 'OpenAlex keywords: "comorbidities", "psychiatric comorbidity"',
+        kind: "keyword",
+        keywords: ["comorbidities", "psychiatric comorbidity", "comorbidity"],
+      },
     ],
   },
   {
@@ -105,6 +119,13 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       { id: "T10762", label: "Migration & trauma", openAlexName: "Migration, Health and Trauma" },
       { id: "T10314", label: "Intergroup psychology", openAlexName: "Social and Intergroup Psychology" },
       { id: "T13101", label: "Justice & legal systems", openAlexName: "Legal and Social Justice Studies" },
+      {
+        id: "kw:sex-gender",
+        label: "Sex & gender differences",
+        openAlexName: 'OpenAlex keywords: "sex differences", "gender differences"',
+        kind: "keyword",
+        keywords: ["sex differences", "gender differences", "sex and gender differences"],
+      },
     ],
   },
   {
@@ -149,6 +170,35 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       { id: "T10730", label: "Language development", openAlexName: "Language Development and Disorders" },
       { id: "T12831", label: "School health", openAlexName: "School Health and Nursing Education" },
       { id: "T11761", label: "Resilience", openAlexName: "Resilience and Mental Health" },
+      {
+        id: "kw:emotion-regulation",
+        label: "Emotion regulation",
+        openAlexName: 'OpenAlex keywords: "emotion regulation", "emotional dysregulation"',
+        kind: "keyword",
+        keywords: [
+          "emotion regulation",
+          "emotional dysregulation",
+          // Variants below the top-200 cutoff when this was checked, so they
+          // are included defensively — harmless if OpenAlex never uses them.
+          "emotional regulation",
+          "emotion dysregulation",
+          "emotion regulation difficulties",
+        ],
+      },
+      {
+        id: "kw:executive-function",
+        label: "Executive function",
+        openAlexName: 'OpenAlex keyword: "executive function"',
+        kind: "keyword",
+        keywords: ["executive function", "executive functioning", "executive functions"],
+      },
+      {
+        id: "kw:trajectories",
+        label: "Developmental trajectories",
+        openAlexName: 'OpenAlex keyword: "developmental trajectories"',
+        kind: "keyword",
+        keywords: ["developmental trajectories", "developmental trajectory"],
+      },
       { id: "T14104", label: "Neuropsychology", openAlexName: "Developmental and Educational Neuropsychology" },
       { id: "T10467", label: "Psychometrics", openAlexName: "Psychometric Methodologies and Testing" },
     ],
