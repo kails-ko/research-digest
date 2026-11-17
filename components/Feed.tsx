@@ -213,28 +213,36 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           </div>
         )}
 
-        {visit.newIds.length > 0 && (
-          <div className="newbar">
-            <span className="newcount mono">{visit.newIds.length}</span>
-            <span>
-              new since your last visit
-              {visit.lastVisitAt && ` (${formatVisitDate(visit.lastVisitAt)})`}
-            </span>
-            <button
-              className="btn btn-quiet"
-              onClick={() =>
-                setFilters((f) => ({ ...EMPTY_FILTERS, status: f.status, sort: f.sort }))
-              }
-            >
-              Show all {articles.length}
-            </button>
-            <button
-              className="btn"
-              data-on={showNewOnly}
-              onClick={() => setShowNewOnly((v) => !v)}
-            >
-              {showNewOnly ? "Showing only new" : "Show only these"}
-            </button>
+        {/* Shown whenever there has been a previous visit, including when
+            nothing is new — otherwise the feature is invisible on the days it
+            has nothing to report, which is most days. */}
+        {!visit.pending && visit.lastVisitAt && (
+          <div className="newbar" data-empty={visit.newIds.length === 0}>
+            {visit.newIds.length > 0 ? (
+              <>
+                <span className="newcount mono">{visit.newIds.length}</span>
+                <span>
+                  new since your last visit ({formatVisitDate(visit.lastVisitAt)})
+                </span>
+                <button
+                  className="btn"
+                  data-on={showNewOnly}
+                  onClick={() => setShowNewOnly((v) => !v)}
+                >
+                  {showNewOnly ? "Showing only new" : "Show only these"}
+                </button>
+                {showNewOnly && (
+                  <button className="btn btn-quiet" onClick={() => setShowNewOnly(false)}>
+                    Show all {articles.length}
+                  </button>
+                )}
+              </>
+            ) : (
+              <span>
+                Nothing new since your last visit ({formatVisitDate(visit.lastVisitAt)}).
+                New articles will be counted here.
+              </span>
+            )}
           </div>
         )}
 
@@ -243,11 +251,18 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           <div className="panel-head">
             <h2>Saved lenses</h2>
             <div className="right">
-              {hasOverrides && (
-                <button className="linkbtn" onClick={() => lensStore.restoreDefaults()}>
-                  Restore default lenses
-                </button>
-              )}
+              <button
+                className="linkbtn"
+                disabled={!hasOverrides}
+                title={
+                  hasOverrides
+                    ? "Undo your changes to the lenses that ship with the app"
+                    : "Nothing to restore — the built-in lenses are unchanged"
+                }
+                onClick={() => lensStore.restoreDefaults()}
+              >
+                Restore default lenses
+              </button>
               <button className="linkbtn" onClick={copyShareLink}>
                 {copied ? "Link copied" : "Copy link to these filters"}
               </button>
@@ -264,11 +279,9 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             </div>
           </div>
           <p className="hint">
-            One click applies a whole set of filters. Every lens here can be
-            renamed, re-pointed at whatever filters you have on now, or removed —
-            including the ones that ship with the app, which <b>Restore default
-            lenses</b> brings back. To move a lens to another device or send it to
-            someone, use <b>Copy link to these filters</b>: a lens is just a link.
+            One click applies a whole set of filters. To move a lens to another
+            device or send it to someone, use <b>Copy link to these filters</b>: a
+            lens is just a link.
           </p>
 
           {editing && (
@@ -372,6 +385,22 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                   <span className="filter-summary">
                     <b>{topicPanelActive}</b> selected
                   </span>
+                  <span className="segmented segmented-sm" role="group" aria-label="How topic chips combine">
+                    <button
+                      data-on={filters.topicMode === "any"}
+                      title="An article qualifies if it matches any selected chip"
+                      onClick={() => setFilters((f) => ({ ...f, topicMode: "any" }))}
+                    >
+                      Any
+                    </button>
+                    <button
+                      data-on={filters.topicMode === "all"}
+                      title="An article must match every selected chip"
+                      onClick={() => setFilters((f) => ({ ...f, topicMode: "all" }))}
+                    >
+                      All
+                    </button>
+                  </span>
                   <button className="linkbtn" onClick={deselectAllTopics}>
                     Deselect all
                   </button>
@@ -393,9 +422,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           <p className="hint">
             Mostly OpenAlex Topics rather than word searches — an article is tagged
             &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not it
-            uses the word. The number on each chip is how many of this month&rsquo;s
-            articles carry it.{" "}
-            <b>Picking more chips here widens the feed, it doesn&rsquo;t narrow it</b>
+            uses the word. <b>Picking more chips here widens the feed, it doesn&rsquo;t narrow it</b>
             {" "}— an article only has to match <b>one</b> of them, whichever rows
             they came from. The <b>Journals</b> and <b>Hot this month</b> lists are
             what narrow it: an article has to match something in every list

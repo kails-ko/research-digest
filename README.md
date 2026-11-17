@@ -58,10 +58,11 @@ as OpenAlex *keywords*, so those chips match keyword strings instead. They are
 marked `kind: "keyword"` in `lib/topics.ts` with the exact strings listed, and
 they are only as good as the keywords publishers supply.
 
-**How chips combine** — all topic chips OR together, whichever group they sit
-in, so picking more of them *widens* the feed. The Journals and "Hot this
-month" lists are separate layers and AND with the topics: an article has to
-match something in every layer you have used.
+**How chips combine** — an **Any / All** switch in the Topics header. On *Any*
+(the default) topic chips OR together whichever group they sit in, so picking
+more of them widens the feed. On *All* they AND, so each chip narrows further —
+ADHD + Parenting goes from 33 articles to 1. The mode travels in the URL, so a
+shared lens keeps it. The Journals and "Hot this month" lists always AND.
 
 ### 2. "Hot this month" — self-refreshing vocabulary
 

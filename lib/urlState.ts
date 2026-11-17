@@ -65,6 +65,7 @@ export function serializeFilters(f: FilterState): string {
   if (f.topics.length) p.set(KEYS.topics, f.topics.join(","));
   if (f.keywords.length) p.set(KEYS.keywords, f.keywords.join(","));
   if (f.journals.length) p.set(KEYS.journals, f.journals.join(","));
+  if (f.topicMode === "all") p.set("mode", "all");
   if (f.access === "oa") p.set("oa", "1");
   if (f.status !== "all") p.set("show", f.status);
   if (f.sort !== "date") p.set("sort", f.sort);
@@ -82,6 +83,7 @@ export function parseFilters(search: string): FilterState {
   return {
     ...EMPTY_FILTERS,
     topics: list(KEYS.topics),
+    topicMode: p.get("mode") === "all" ? "all" : "any",
     keywords: list(KEYS.keywords),
     journals: list(KEYS.journals),
     access: p.get("oa") === "1" ? "oa" : "any",

@@ -53,6 +53,8 @@ export function suggestKeywords(articles: Decorated[], limit = 24) {
 
 export type FilterState = {
   topics: string[];
+  /** "any" = an article matching one chip qualifies; "all" = it must match every one. */
+  topicMode: "any" | "all";
   keywords: string[];
   journals: string[];
   /** "any" keeps everything; "oa" keeps only open-access articles. */
@@ -64,6 +66,7 @@ export type FilterState = {
 
 export const EMPTY_FILTERS: FilterState = {
   topics: [],
+  topicMode: "any",
   keywords: [],
   journals: [],
   access: "any",
@@ -81,9 +84,10 @@ export function countActive(f: FilterState): number {
 }
 
 /**
- * Filtering rule, chosen deliberately: chips *within* a layer are OR'd, and the
- * layers are AND'd together. So picking ADHD + Autism widens the feed, while
- * adding a keyword or a journal on top narrows it.
+ * Topic chips combine by `topicMode`: "any" (the default) lets an article in
+ * when it matches one of them, "all" requires every one. The other layers —
+ * keywords, journals, access, status — always AND with the topics and with
+ * each other.
  */
 export function applyFilters(
   articles: Decorated[],
@@ -92,7 +96,13 @@ export function applyFilters(
   saved: ReadonlySet<string>,
 ): Decorated[] {
   return articles.filter((a) => {
-    if (f.topics.length && !a.chipIds.some((c) => f.topics.includes(c))) return false;
+    if (f.topics.length) {
+      const hit =
+        f.topicMode === "all"
+          ? f.topics.every((c) => a.chipIds.includes(c))
+          : f.topics.some((c) => a.chipIds.includes(c));
+      if (!hit) return false;
+    }
     if (f.keywords.length && !a.keywordKeys.some((k) => f.keywords.includes(k))) return false;
     if (f.journals.length && !f.journals.includes(a.journalId)) return false;
     if (f.access === "oa" && !a.isOA) return false;
