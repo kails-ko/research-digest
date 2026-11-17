@@ -1258,6 +1258,7 @@ button {
      affordance, not something you read on a 375px screen. */
   .lensrow {
     flex-wrap: nowrap;
+    gap: 14px;
     overflow-x: auto;
     scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
@@ -1271,15 +1272,29 @@ button {
     max-width: none;
     scroll-snap-align: start;
   }
-  .lens-apply span,
-  .lens > span {
+  /* Hide only the blurb inside the button. NOT `.lens > span`, which is
+     .lens-tools — that selector took the edit and delete controls with it. */
+  .lens-apply span {
     display: none;
   }
   .lens-apply strong {
     white-space: nowrap;
   }
   .lens-apply {
-    padding: 8px 4px 8px 12px;
+    padding: 10px 2px 10px 14px;
+  }
+  /* Without an explicit intrinsic width the flex child collapses inside the
+     horizontally scrolling row. */
+  .lens {
+    min-width: max-content;
+  }
+  .lens-tools {
+    padding-right: 8px;
+    gap: 2px;
+  }
+  .lens-edit,
+  .lens-delete {
+    padding: 10px 6px;
   }
 
   /* The explanatory lines are for a first read on a wide screen; on a phone

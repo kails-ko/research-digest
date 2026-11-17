@@ -209,10 +209,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               <b>{saved.size}</b>
               <span>saved</span>
             </span>
-            <span className="stat">
-              <b>{JOURNALS.length}</b>
-              <span>journals followed</span>
-            </span>
           </div>
         </div>
       </header>
