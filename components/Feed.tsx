@@ -8,8 +8,11 @@ import {
   chipCounts,
   countActive,
   decorate,
+  groupByJournal,
   groupByReadStatus,
   groupByRecency,
+  groupFlat,
+  sortArticles,
   suggestKeywords,
   type FilterState,
 } from "@/lib/filter";
@@ -128,7 +131,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   const newIdSet = useMemo(() => new Set(visit.newIds), [visit.newIds]);
 
   const visible = useMemo(
-    () => applyFilters(articles, filters, seen, saved, newIdSet),
+    () => sortArticles(applyFilters(articles, filters, seen, saved, newIdSet), filters.sort),
     [articles, filters, seen, saved, newIdSet],
   );
 
@@ -148,13 +151,26 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     () => articles.filter((a) => saved.has(a.id)),
     [articles, saved],
   );
-  const groups = useMemo(
-    () =>
-      filters.sort === "unread"
-        ? groupByReadStatus(visible, seen)
-        : groupByRecency(visible),
-    [visible, filters.sort, seen],
-  );
+  const groups = useMemo(() => {
+    switch (filters.sort) {
+      case "unread":
+        return groupByReadStatus(visible, seen);
+      case "journal":
+      case "journal-desc":
+        // One heading per journal — the articles are already contiguous by
+        // journal once sorted, so this is a run-length grouping.
+        return groupByJournal(visible);
+      case "author":
+        return groupFlat(visible, "By first author, A–Z");
+      case "author-desc":
+        return groupFlat(visible, "By first author, Z–A");
+      case "date-asc":
+        // The same weekly buckets, oldest first.
+        return [...groupByRecency(visible)].reverse();
+      default:
+        return groupByRecency(visible);
+    }
+  }, [visible, filters.sort, seen]);
   const active = countActive(filters);
 
   const currentSearch = search.replace(/^\?/, "");
@@ -342,9 +358,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                     checked={repoint}
                     onChange={(e) => setRepoint(e.target.checked)}
                   />
-                  <span>
-                    Also re-point it at the filters on now ({describeSearch(filters)})
-                  </span>
+                  <span>Update using selected filters.</span>
                 </label>
               )}
             </form>
@@ -498,8 +512,8 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             </div>
 
             <p className="hint">
-              These tags come from OpenAlex&rsquo;s own classification, so an article
-              counts as &ldquo;ADHD&rdquo; whether or not it uses the word.
+              These tags use OpenAlex&rsquo;s classification; they may not reflect the
+              publisher&rsquo;s keywords.
             </p>
 
             {TOPIC_GROUPS.map((g) => (
@@ -576,7 +590,12 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 }
               >
                 <option value="date">Newest first</option>
+                <option value="date-asc">Oldest first</option>
                 <option value="unread">Unread first</option>
+                <option value="author">First author (A–Z)</option>
+                <option value="author-desc">First author (Z–A)</option>
+                <option value="journal">Journal (A–Z)</option>
+                <option value="journal-desc">Journal (Z–A)</option>
               </select>
             </label>
             <span className="filter-summary">

@@ -578,7 +578,7 @@ button {
 .abstract {
   font-family: var(--ui);
   font-size: 0.95rem;
-  line-height: 1.62;
+  line-height: 1.42;
   color: var(--navy);
   margin: 10px 0 12px;
   max-width: 78ch;

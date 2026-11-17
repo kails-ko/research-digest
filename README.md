@@ -131,9 +131,12 @@ URL that opens with exactly those filters applied, so a lens travels to another
 device, or to a colleague, as a link. Back/forward step through filter changes
 too.
 
-**Sorting** — the toolbar's Sort control switches between *Newest first* (the
-weekly buckets) and *Unread first*, which replaces those buckets with two
-groups, Unread and Already read, since read status cuts across weeks.
+**Sorting** — the toolbar's Sort control offers *Newest first* and *Oldest
+first* (the weekly buckets, in either direction), *Unread first* (two groups,
+Unread and Already read, since read status cuts across weeks), *First author
+A–Z/Z–A*, and *Journal A–Z/Z–A* (one heading per journal). Articles with no
+listed author — editorials, errata — sort to the end in both author
+directions rather than leading the Z–A list.
 
 **Note on the five topic category headings** (Conditions & presenting problems,
 Family & caregiving, and so on): those are *hand-made in `lib/topics.ts`*, not

@@ -94,6 +94,14 @@ export function parseFilters(search: string): FilterState {
       status === "saved"
         ? status
         : "all",
-    sort: sort === "unread" ? "unread" : "date",
+    sort:
+      sort === "date-asc" ||
+      sort === "unread" ||
+      sort === "author" ||
+      sort === "author-desc" ||
+      sort === "journal" ||
+      sort === "journal-desc"
+        ? sort
+        : "date",
   };
 }

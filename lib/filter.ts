@@ -60,8 +60,19 @@ export type FilterState = {
   /** "any" keeps everything; "oa" keeps only open-access articles. */
   access: "any" | "oa";
   status: "all" | "new" | "unseen" | "read" | "saved";
-  /** "date" keeps the weekly buckets; "unread" puts everything unread first. */
-  sort: "date" | "unread";
+  /**
+   * "date" keeps the weekly buckets, "date-asc" reverses them, "unread" puts
+   * everything unread first, and the author/journal sorts replace the date
+   * headers with ones that suit the ordering.
+   */
+  sort:
+    | "date"
+    | "date-asc"
+    | "unread"
+    | "author"
+    | "author-desc"
+    | "journal"
+    | "journal-desc";
 };
 
 export const EMPTY_FILTERS: FilterState = {
@@ -136,6 +147,67 @@ export function chipCounts(
     for (const k of new Set(keys)) counts.set(k, (counts.get(k) ?? 0) + 1);
   }
   return counts;
+}
+
+/** The surname the feed sorts on: the last word of the first author's name. */
+export function firstAuthorSurname(a: Decorated): string {
+  const first = a.authors[0];
+  if (!first) return "";
+  return (first.trim().split(/\s+/).pop() ?? first).toLowerCase();
+}
+
+/**
+ * Order the list for everything except the date sorts, which are already in
+ * date order from the API. Ties fall back to the publication date so the
+ * ordering is stable rather than arbitrary.
+ */
+export function sortArticles(articles: Decorated[], sort: FilterState["sort"]): Decorated[] {
+  const byDateDesc = (a: Decorated, b: Decorated) => b.date.localeCompare(a.date);
+  const out = [...articles];
+  switch (sort) {
+    case "date-asc":
+      return out.sort((a, b) => a.date.localeCompare(b.date));
+    case "author":
+    case "author-desc": {
+      // Editorials and errata often carry no author. They belong at the end
+      // whichever way the sort runs, so they are held out rather than given a
+      // sentinel surname, which would have led the Z-A list with them.
+      const named = out.filter((a) => firstAuthorSurname(a));
+      const anonymous = out.filter((a) => !firstAuthorSurname(a)).sort(byDateDesc);
+      const dir = sort === "author" ? 1 : -1;
+      named.sort(
+        (a, b) =>
+          dir * firstAuthorSurname(a).localeCompare(firstAuthorSurname(b)) || byDateDesc(a, b),
+      );
+      return [...named, ...anonymous];
+    }
+    case "journal":
+      return out.sort(
+        (a, b) => a.journalName.localeCompare(b.journalName) || byDateDesc(a, b),
+      );
+    case "journal-desc":
+      return out.sort(
+        (a, b) => b.journalName.localeCompare(a.journalName) || byDateDesc(a, b),
+      );
+    default:
+      return out.sort(byDateDesc);
+  }
+}
+
+/** One group per journal, for the journal sorts. */
+export function groupByJournal(articles: Decorated[]) {
+  const groups: { label: string; items: Decorated[] }[] = [];
+  for (const a of articles) {
+    const last = groups[groups.length - 1];
+    if (last && last.label === a.journalName) last.items.push(a);
+    else groups.push({ label: a.journalName, items: [a] });
+  }
+  return groups;
+}
+
+/** A single unlabelled run, for the author sorts. */
+export function groupFlat(articles: Decorated[], label: string) {
+  return articles.length ? [{ label, items: articles }] : [];
 }
 
 /**
