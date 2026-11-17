@@ -19,13 +19,29 @@
  *   curl "https://api.openalex.org/topics?search=your+topic&select=id,display_name"
  */
 
+/**
+ * A chip is one of two things, and the `kind` says which:
+ *
+ *  - "topic"   — an OpenAlex Topic ID. Exact, and independent of wording: an
+ *                article is tagged T10537 whether or not it says "ADHD".
+ *  - "keyword" — one or more OpenAlex *keyword* strings. Some things this feed
+ *                cares about have no Topic at all (OpenAlex has no topic for
+ *                parent training, CBT, or parenting), but they do appear as
+ *                keywords. These chips match those strings exactly, so they
+ *                are only as good as the keywords publishers supply — a paper
+ *                about CBT that OpenAlex never tagged "cognitive behavioral
+ *                therapy" will not match.
+ */
 export type TopicChip = {
-  /** OpenAlex Topic ID, e.g. "T10537" */
+  /** Topic ID ("T10537") for a topic chip, or a "kw:" id for a keyword chip. */
   id: string;
   /** Short label for the chip. The OpenAlex display name is often long. */
   label: string;
-  /** The OpenAlex display name, shown on hover so the mapping stays honest. */
+  /** What this maps to in OpenAlex, shown on hover so the mapping stays honest. */
   openAlexName: string;
+  kind?: "topic" | "keyword";
+  /** For a keyword chip: the exact OpenAlex keyword strings it matches. */
+  keywords?: string[];
 };
 
 export type TopicGroup = {
@@ -65,6 +81,18 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       { id: "T11632", label: "Disability & family support", openAlexName: "Family and Disability Support Research" },
       { id: "T10380", label: "Family & partner violence", openAlexName: "Intimate Partner and Family Violence" },
       { id: "T12245", label: "Family therapy", openAlexName: "Counseling, Therapy, and Family Dynamics" },
+      {
+        id: "kw:parenting",
+        label: "Parenting",
+        openAlexName: 'OpenAlex keywords: "parenting", "parenting support", "parenting practices", "parenting styles"',
+        kind: "keyword",
+        // Deliberately the parenting-behaviour cluster. It leaves out
+        // "parental stress" and "parental mental health" (those are about the
+        // parent's own wellbeing) and "parent-child relationship" /
+        // "parent-child interaction" (relationship quality). Add them here if
+        // you want the wider read.
+        keywords: ["parenting", "parenting support", "parenting practices", "parenting styles"],
+      },
       { id: "T13393", label: "Feeding & nutrition", openAlexName: "Child Nutrition and Feeding Issues" },
     ],
   },
@@ -85,6 +113,21 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     topics: [
       { id: "T10214", label: "Psychotherapy", openAlexName: "Psychotherapy Techniques and Applications" },
       { id: "T13143", label: "Child & family therapy", openAlexName: "Child Therapy and Development" },
+      {
+        id: "kw:parent-training",
+        label: "Parent training",
+        openAlexName: 'OpenAlex keyword: "parent training"',
+        kind: "keyword",
+        keywords: ["parent training"],
+      },
+      {
+        id: "kw:cbt",
+        label: "CBT",
+        openAlexName: 'OpenAlex keyword: "cognitive behavioral therapy"',
+        kind: "keyword",
+        // Both spellings; OpenAlex normalizes most to the American one.
+        keywords: ["cognitive behavioral therapy", "cognitive behavioural therapy"],
+      },
       { id: "T10272", label: "Access to care", openAlexName: "Mental Health Treatment and Access" },
       { id: "T11519", label: "Digital interventions", openAlexName: "Digital Mental Health Interventions" },
       { id: "T10629", label: "Implementation & policy", openAlexName: "Health Policy Implementation Science" },
@@ -117,6 +160,9 @@ export const ALL_TOPICS = TOPIC_GROUPS.flatMap((g) =>
 );
 
 export const TOPIC_BY_ID = new Map(ALL_TOPICS.map((t) => [t.id, t]));
+
+/** The keyword chips only, for the matcher in lib/filter.ts. */
+export const KEYWORD_CHIPS = ALL_TOPICS.filter((t) => t.kind === "keyword");
 
 /* ------------------------------------------------------------------------ */
 /* Lenses: saved one-click combinations                                       */

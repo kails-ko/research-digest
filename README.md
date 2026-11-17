@@ -43,6 +43,14 @@ would otherwise push the feed below the fold on every visit. The header still
 reports how many chips are selected while it's shut, and **Deselect all** clears
 both the topic and study-design rows in one click.
 
+Three chips are **keyword chips**, not topic chips: Parenting (under Family &
+caregiving), and Parent training and CBT (under Treatment, services, &
+prevention). OpenAlex has no Topic for any of them — searching its topics for
+"prevention" returns falls prevention and sports injuries — but all three exist
+as OpenAlex *keywords*, so those chips match keyword strings instead. They are
+marked `kind: "keyword"` in `lib/topics.ts` with the exact strings listed, and
+they are only as good as the keywords publishers supply.
+
 ### 2. "Showing up this month" — self-refreshing vocabulary
 
 OpenAlex also attaches free-form **keywords** to most works (~97% of this
@@ -131,6 +139,20 @@ ever want your own, get one at <https://openalex.org/settings/api> and set
 nothing else changes.
 
 ---
+
+## Sending articles to Zotero
+
+Save articles, then use **Download RIS** or **Download BibTeX** in the bar above
+the feed, and in Zotero go to **File → Import**. Both formats carry authors,
+year, title, journal, DOI, abstract, and keywords.
+
+They deliberately leave out volume, issue, and page numbers: OpenAlex's biblio
+fields are unreliable for online-first articles, which is most of a 30-day
+window, and Zotero fills them from the DOI anyway via "Update metadata".
+
+It all happens in the browser — no Zotero account, no API key, nothing
+uploaded — so it works the same for anyone using the app. The code is in
+`lib/export.ts`.
 
 ## Branding
 

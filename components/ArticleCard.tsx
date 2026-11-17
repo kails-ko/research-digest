@@ -64,9 +64,10 @@ export default function ArticleCard({
     }
   }
 
-  // Only the topics that this feed actually offers as chips are worth showing;
-  // OpenAlex hangs several very generic topics on everything.
-  const shownTopics = a.topicIds.filter((t) => TOPIC_BY_ID.has(t));
+  // Every curated chip this article matched — topic chips and keyword chips
+  // alike. Raw OpenAlex topics that this feed doesn't offer as a chip are left
+  // off, since it hangs several very generic ones on everything.
+  const shownTopics = a.chipIds;
 
   return (
     <article className="card" data-seen={seen} data-saved={saved}>

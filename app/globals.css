@@ -888,3 +888,29 @@ button {
 .panel-row .panel {
   margin-bottom: 0;
 }
+
+/* ------------------------------------------------------------ export bar */
+
+.exportbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  margin: 4px 0 8px;
+  border: 1px solid var(--rule);
+  border-left: 5px solid var(--pink);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.exporthint {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.exporthint em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+}

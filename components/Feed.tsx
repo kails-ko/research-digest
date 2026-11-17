@@ -17,6 +17,7 @@ import { JOURNALS } from "@/lib/journals";
 import { savedStore, seenStore } from "@/lib/idStore";
 import ArticleCard from "./ArticleCard";
 import MultiSelect from "./MultiSelect";
+import { downloadFile, stamp, toBibTeX, toRIS } from "@/lib/export";
 
 export default function Feed({ feed }: { feed: FeedResult }) {
   const articles = useMemo(() => decorate(feed.articles), [feed.articles]);
@@ -84,6 +85,12 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   );
 
   const suggested = useMemo(() => suggestKeywords(articles), [articles]);
+  // Everything saved, regardless of the filters in force — the export is about
+  // your saved list, not about what happens to be on screen.
+  const savedArticles = useMemo(
+    () => articles.filter((a) => saved.has(a.id)),
+    [articles, saved],
+  );
   const groups = useMemo(() => groupByRecency(visible), [visible]);
   const unseenCount = articles.filter((a) => !seen.has(a.id)).length;
   const active = countActive(filters);
@@ -320,6 +327,44 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             </button>
           </div>
         </div>
+
+        {/* Export sits under the toolbar rather than in it: it acts on what
+            you have saved, not on what the filters are currently showing. */}
+        {savedArticles.length > 0 && (
+          <div className="exportbar">
+            <span className="filter-summary">
+              <b>{savedArticles.length}</b> saved —{" "}
+              {savedArticles.length === 1 ? "send it" : "send them"} to Zotero:
+            </span>
+            <button
+              className="btn btn-quiet"
+              onClick={() =>
+                downloadFile(
+                  `research-digest-${stamp()}.ris`,
+                  toRIS(savedArticles),
+                  "application/x-research-info-systems",
+                )
+              }
+            >
+              Download RIS
+            </button>
+            <button
+              className="btn btn-quiet"
+              onClick={() =>
+                downloadFile(
+                  `research-digest-${stamp()}.bib`,
+                  toBibTeX(savedArticles),
+                  "application/x-bibtex",
+                )
+              }
+            >
+              Download BibTeX
+            </button>
+            <span className="exporthint">
+              Zotero: <em>File &rarr; Import</em>, then pick the file.
+            </span>
+          </div>
+        )}
 
         {/* ------------------------------------------------ feed */}
         {visible.length === 0 ? (

@@ -1,15 +1,28 @@
 import type { Article } from "./openalex";
+import { KEYWORD_CHIPS, TOPIC_BY_ID } from "./topics";
 
 export type Decorated = Article & {
   /** Lowercased OpenAlex keywords, for the auto-suggested chip layer. */
   keywordKeys: string[];
+  /**
+   * Every curated chip this article matches, topic chips and keyword chips
+   * alike, so the two kinds filter and display identically. Computed once per
+   * article when the feed loads.
+   */
+  chipIds: string[];
 };
 
 export function decorate(articles: Article[]): Decorated[] {
-  return articles.map((a) => ({
-    ...a,
-    keywordKeys: a.keywords.map((k) => k.toLowerCase()),
-  }));
+  return articles.map((a) => {
+    const keywordKeys = a.keywords.map((k) => k.toLowerCase());
+    const chipIds = [
+      ...a.topicIds.filter((t) => TOPIC_BY_ID.has(t)),
+      ...KEYWORD_CHIPS.filter((c) =>
+        (c.keywords ?? []).some((k) => keywordKeys.includes(k.toLowerCase())),
+      ).map((c) => c.id),
+    ];
+    return { ...a, keywordKeys, chipIds };
+  });
 }
 
 /**
@@ -74,7 +87,7 @@ export function applyFilters(
   saved: ReadonlySet<string>,
 ): Decorated[] {
   return articles.filter((a) => {
-    if (f.topics.length && !a.topicIds.some((t) => f.topics.includes(t))) return false;
+    if (f.topics.length && !a.chipIds.some((c) => f.topics.includes(c))) return false;
     if (f.keywords.length && !a.keywordKeys.some((k) => f.keywords.includes(k))) return false;
     if (f.journals.length && !f.journals.includes(a.journalId)) return false;
     if (f.access === "oa" && !a.isOA) return false;
@@ -99,7 +112,7 @@ export function chipCounts(
   const base = applyFilters(articles, { ...f, [layer]: [] }, seen, saved);
   const counts = new Map<string, number>();
   for (const a of base) {
-    const keys = layer === "topics" ? a.topicIds : a.keywordKeys;
+    const keys = layer === "topics" ? a.chipIds : a.keywordKeys;
     for (const k of new Set(keys)) counts.set(k, (counts.get(k) ?? 0) + 1);
   }
   return counts;
