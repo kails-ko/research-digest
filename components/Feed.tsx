@@ -12,7 +12,7 @@ import {
   suggestKeywords,
   type FilterState,
 } from "@/lib/filter";
-import { DESIGN_TAGS, LENSES, TOPIC_GROUPS } from "@/lib/topics";
+import { LENSES, TOPIC_GROUPS } from "@/lib/topics";
 import { JOURNALS } from "@/lib/journals";
 import { savedStore, seenStore } from "@/lib/idStore";
 import ArticleCard from "./ArticleCard";
@@ -40,14 +40,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     savedStore.getServerSnapshot,
   );
 
-  /** Both chip rows in the Topics panel, so "Deselect all" clears what you see. */
-  const topicPanelActive = filters.topics.length + filters.designs.length;
+  const topicPanelActive = filters.topics.length;
 
   function deselectAllTopics() {
-    setFilters((f) => ({ ...f, topics: [], designs: [] }));
+    setFilters((f) => ({ ...f, topics: [] }));
   }
 
-  function toggleIn(layer: "topics" | "designs" | "keywords" | "journals", id: string) {
+  function toggleIn(layer: "topics" | "keywords" | "journals", id: string) {
     setFilters((f) => {
       const cur = f[layer];
       return {
@@ -63,11 +62,10 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     setFilters((f) => {
       const same =
         f.topics.length === lens.topics.length &&
-        lens.topics.every((t) => f.topics.includes(t)) &&
-        (lens.designs ?? []).every((d) => f.designs.includes(d));
+        lens.topics.every((t) => f.topics.includes(t));
       // Clicking the lens you are already on clears it, so it reads as a toggle.
-      if (same) return { ...f, topics: [], designs: [] };
-      return { ...f, topics: [...lens.topics], designs: [...(lens.designs ?? [])] };
+      if (same) return { ...f, topics: [] };
+      return { ...f, topics: [...lens.topics] };
     });
   }
 
@@ -78,10 +76,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
 
   const topicCounts = useMemo(
     () => chipCounts(articles, filters, seen, saved, "topics"),
-    [articles, filters, seen, saved],
-  );
-  const designCounts = useMemo(
-    () => chipCounts(articles, filters, seen, saved, "designs"),
     [articles, filters, seen, saved],
   );
   const keywordCounts = useMemo(
@@ -232,33 +226,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 </div>
               </div>
             ))}
-
-            <span className="group-label">Study design</span>
-            <div className="chiprow">
-              {DESIGN_TAGS.map((d) => {
-                const n = designCounts.get(d.id) ?? 0;
-                return (
-                  <button
-                    key={d.id}
-                    className="chip"
-                    data-accent="pink"
-                    data-on={filters.designs.includes(d.id)}
-                    data-empty={n === 0}
-                    aria-pressed={filters.designs.includes(d.id)}
-                    onClick={() => toggleIn("designs", d.id)}
-                  >
-                    {d.label}
-                    <span className="count">{n}</span>
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </section>
 
-        {/* ------------------------------------------------ suggested */}
-        {suggested.length > 0 && (
-          <section className="panel">
+        {/* --------------------------------- keywords + journals, side by side */}
+        <div className="panel-row">
+          {suggested.length > 0 && (
+            <section className="panel">
             <div className="panel-head">
               <h2>Showing up this month</h2>
               <div className="right">
@@ -281,11 +255,10 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               first. This list changes with the feed, so it surfaces terms you
               wouldn&rsquo;t have thought to search for.
             </p>
-          </section>
-        )}
+            </section>
+          )}
 
-        {/* ------------------------------------------------ journals */}
-        <section className="panel">
+          <section className="panel">
           <div className="panel-head">
             <h2>Journals</h2>
             <div className="right">
@@ -303,10 +276,11 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               />
             </div>
           </div>
-          <p className="hint">
-            No selection means all of them. Tick a few to narrow the feed.
-          </p>
-        </section>
+            <p className="hint">
+              No selection means all of them. Tick a few to narrow the feed.
+            </p>
+          </section>
+        </div>
 
         {/* ------------------------------------------------ toolbar */}
         <div className="toolbar">
@@ -371,7 +345,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                   seen={seen.has(a.id)}
                   saved={saved.has(a.id)}
                   activeTopics={filters.topics}
-                  activeDesigns={filters.designs}
                   activeKeywords={filters.keywords}
                   onToggleSeen={seenStore.toggle}
                   onToggleSaved={savedStore.toggle}

@@ -613,12 +613,6 @@ button {
   font-weight: 700;
 }
 
-.tag-design {
-  background: transparent;
-  border-color: var(--pink);
-  color: var(--navy);
-}
-
 .card-actions {
   display: flex;
   flex-wrap: wrap;
@@ -879,4 +873,18 @@ button {
     left: auto;
     width: min(360px, calc(100vw - 32px));
   }
+}
+
+/* Keywords and Journals sit side by side — both are a heading plus one
+   control, so stacking them wasted a full screen of height. auto-fit means a
+   lone panel (when there are no suggested keywords) still fills the row. */
+.panel-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.panel-row .panel {
+  margin-bottom: 0;
 }

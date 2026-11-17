@@ -3,9 +3,7 @@
 import { useState } from "react";
 import type { Decorated } from "@/lib/filter";
 import { formatDate } from "@/lib/filter";
-import { DESIGN_TAGS, TOPIC_BY_ID } from "@/lib/topics";
-
-const DESIGN_LABEL = new Map(DESIGN_TAGS.map((d) => [d.id, d.label]));
+import { TOPIC_BY_ID } from "@/lib/topics";
 
 /**
  * APA 7 reference. Enough for pasting into a draft — author list, year,
@@ -37,7 +35,6 @@ type Props = {
   seen: boolean;
   saved: boolean;
   activeTopics: string[];
-  activeDesigns: string[];
   activeKeywords: string[];
   onToggleSeen: (id: string) => void;
   onToggleSaved: (id: string) => void;
@@ -48,7 +45,6 @@ export default function ArticleCard({
   seen,
   saved,
   activeTopics,
-  activeDesigns,
   activeKeywords,
   onToggleSeen,
   onToggleSaved,
@@ -97,20 +93,11 @@ export default function ArticleCard({
         {a.authorCount > a.authors.length && ` + ${a.authorCount - a.authors.length} more`}
       </p>
 
-      {(shownTopics.length > 0 || a.designIds.length > 0) && (
+      {shownTopics.length > 0 && (
         <div className="card-tags">
           {shownTopics.map((t) => (
             <span key={t} className="tag" data-match={activeTopics.includes(t)}>
               {TOPIC_BY_ID.get(t)?.label}
-            </span>
-          ))}
-          {a.designIds.map((d) => (
-            <span
-              key={d}
-              className="tag tag-design"
-              data-match={activeDesigns.includes(d)}
-            >
-              {DESIGN_LABEL.get(d)}
             </span>
           ))}
         </div>

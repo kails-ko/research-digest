@@ -1,7 +1,7 @@
 /**
  * The click-to-filter taxonomy — this feed's answer to "type a keyword."
  *
- * Three layers, all clickable, none of them requiring you to guess a search term:
+ * Two layers, both clickable, neither requiring you to guess a search term:
  *
  *   1. TOPIC_GROUPS — OpenAlex Topics. OpenAlex classifies every work into a
  *      fixed taxonomy of ~4,500 topics, so these are exact, stable matches
@@ -11,11 +11,7 @@
  *      23 journals, pulled from a group_by over the last 12 months, so every
  *      chip is one a real article has carried.
  *
- *   2. DESIGN_TAGS — study design, which OpenAlex Topics deliberately do not
- *      encode (a topic is about subject matter, not method). These match
- *      against title + abstract text, but you still click rather than type.
- *
- *   3. Auto-suggested chips — not defined here. The app reads the OpenAlex
+ *   2. Auto-suggested chips — not defined here. The app reads the OpenAlex
  *      `keywords` on whatever articles came back this month and offers the
  *      most frequent ones as chips, so the vocabulary refreshes itself.
  *
@@ -123,65 +119,6 @@ export const ALL_TOPICS = TOPIC_GROUPS.flatMap((g) =>
 export const TOPIC_BY_ID = new Map(ALL_TOPICS.map((t) => [t.id, t]));
 
 /* ------------------------------------------------------------------------ */
-/* Layer 2: study design                                                      */
-/* ------------------------------------------------------------------------ */
-
-/**
- * OpenAlex Topics describe *what a paper is about*, never *how it was done* —
- * so design has to come from the text. Each tag is a set of patterns tested
- * against `title + abstract`, lowercased. You still click, never type; the
- * patterns are the app's business, not yours.
- */
-export type DesignTag = {
-  id: string;
-  label: string;
-  patterns: RegExp[];
-};
-
-export const DESIGN_TAGS: DesignTag[] = [
-  {
-    id: "rct",
-    label: "Randomized trial",
-    patterns: [/\brandomi[sz]ed\b/, /\brct\b/, /\brandomly assigned\b/, /\bcontrolled trial\b/],
-  },
-  {
-    id: "synthesis",
-    label: "Meta-analysis / review",
-    patterns: [/\bmeta-?analy/, /\bsystematic review\b/, /\bscoping review\b/, /\bnarrative review\b/, /\bumbrella review\b/],
-  },
-  {
-    id: "longitudinal",
-    label: "Longitudinal",
-    patterns: [/\blongitudinal\b/, /\bprospective\b/, /\bfollow-?up\b/, /\bwaves?\b/, /\bcohort\b/, /\bacross time\b/],
-  },
-  {
-    id: "measurement",
-    label: "Measurement & validation",
-    patterns: [/\bpsychometric/, /\bvalidat/, /\bmeasurement invariance\b/, /\bfactor structure\b/, /\breliability\b/, /\bconfirmatory factor\b/],
-  },
-  {
-    id: "qualitative",
-    label: "Qualitative",
-    patterns: [/\bqualitative\b/, /\bthematic analysis\b/, /\bfocus groups?\b/, /\bsemi-?structured interview/, /\bgrounded theory\b/, /\bmixed method/],
-  },
-  {
-    id: "pilot",
-    label: "Pilot / feasibility",
-    patterns: [/\bpilot\b/, /\bfeasibilit/, /\bopen trial\b/, /\bproof of concept\b/, /\bacceptabilit/],
-  },
-  {
-    id: "mechanism",
-    label: "Mediation / moderation",
-    patterns: [/\bmediat/, /\bmoderat/, /\bindirect effect/, /\bmechanism/],
-  },
-  {
-    id: "person-centered",
-    label: "Latent class / profiles",
-    patterns: [/\blatent class\b/, /\blatent profile\b/, /\bperson-?centered\b/, /\bmixture model/, /\bnetwork analysis\b/],
-  },
-];
-
-/* ------------------------------------------------------------------------ */
 /* Lenses: saved one-click combinations                                       */
 /* ------------------------------------------------------------------------ */
 
@@ -195,7 +132,6 @@ export type Lens = {
   label: string;
   blurb: string;
   topics: string[];
-  designs?: string[];
 };
 
 export const LENSES: Lens[] = [
@@ -222,11 +158,10 @@ export const LENSES: Lens[] = [
     topics: ["T10629", "T10272", "T12831", "T10589"],
   },
   {
-    id: "treatment-trials",
-    label: "Treatment trials",
-    blurb: "Psychotherapy and intervention research tested in a randomized design",
+    id: "treatment",
+    label: "Treatment & intervention",
+    blurb: "Psychotherapy, digital interventions, and mindfulness-based work",
     topics: ["T10214", "T11519", "T10708"],
-    designs: ["rct"],
   },
   {
     id: "trauma",
@@ -237,8 +172,7 @@ export const LENSES: Lens[] = [
   {
     id: "measurement",
     label: "Measurement & methods",
-    blurb: "Scale development, invariance testing, and person-centered modeling",
+    blurb: "Psychometrics, scale development, and testing",
     topics: ["T10467"],
-    designs: ["measurement", "person-centered"],
   },
 ];

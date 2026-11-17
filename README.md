@@ -43,20 +43,7 @@ would otherwise push the feed below the fold on every visit. The header still
 reports how many chips are selected while it's shut, and **Deselect all** clears
 both the topic and study-design rows in one click.
 
-### 2. Study design — what topics can't tell you
-
-OpenAlex Topics describe *subject matter*, never *method*. There is no topic for
-"randomized trial." So design tags (`DESIGN_TAGS` in `lib/topics.ts`) match
-patterns against title + abstract: randomized trial, meta-analysis/review,
-longitudinal, measurement & validation, qualitative, pilot/feasibility,
-mediation/moderation, latent class/profiles. You still click — the regexes are
-the app's problem, not yours.
-
-This is the one layer that is genuinely fuzzy. It matches text, so it inherits
-the usual text-matching problems, and it can only see articles that have an
-abstract (about 60% of a given month — many publishers withhold them).
-
-### 3. "Showing up this month" — self-refreshing vocabulary
+### 2. "Showing up this month" — self-refreshing vocabulary
 
 OpenAlex also attaches free-form **keywords** to most works (~97% of this
 month's set). The app counts them across whatever came back and offers the most
@@ -65,23 +52,19 @@ them). This row changes every time the feed refreshes, so it surfaces
 terms you wouldn't have thought to search for — it's the feed telling you what
 is in it rather than you guessing.
 
-### 4. Lenses — one click, several chips
+### 3. Lenses — one click, several chips
 
 A lens is a named standing search: "ADHD & families" applies three topic chips
-at once, "Parent training" applies four, and "Treatment trials" applies three
-topics plus the randomized-trial design tag. These are the real replacement for retyping the same query every
+at once, and "Parent training" applies four. These are the real replacement for retyping the same query every
 week. Six ship in `LENSES` (`lib/topics.ts`); they are plain data, so add your
 own.
 
 ### How the layers combine
 
-Chips **within** a row are OR'd; the rows are AND'd together.
+Chips **within** a layer are OR'd; the layers are AND'd together.
 
 - ADHD + Autism → *widens* (either one)
-- ADHD + Randomized trial → *narrows* (both)
-
-That matches how you'd say it out loud: "ADHD or autism work, but only the
-trials."
+- ADHD + a keyword, or ADHD + a journal → *narrows* (both must hold)
 
 ---
 
@@ -200,8 +183,6 @@ the browser.
 
 ## Known gaps
 
-- **Design tags only see articles with abstracts** (~60% of a month). An article
-  without one can't match "Randomized trial" even if it is one.
 - **`publication_date` is the publisher's date**, which for online-first articles
   can lead the print issue by months. A few articles may carry dates slightly
   ahead of today.

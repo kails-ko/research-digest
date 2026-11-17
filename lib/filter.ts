@@ -1,22 +1,6 @@
 import type { Article } from "./openalex";
-import { DESIGN_TAGS } from "./topics";
-
-/** Title + abstract, lowercased once per article and reused by every tag. */
-function haystack(a: Article): string {
-  return `${a.title} ${a.abstract ?? ""}`.toLowerCase();
-}
-
-/**
- * Which design tags an article matches. Computed once when the feed loads,
- * not on every keystroke — there are no keystrokes.
- */
-export function designTagsFor(a: Article): string[] {
-  const text = haystack(a);
-  return DESIGN_TAGS.filter((t) => t.patterns.some((p) => p.test(text))).map((t) => t.id);
-}
 
 export type Decorated = Article & {
-  designIds: string[];
   /** Lowercased OpenAlex keywords, for the auto-suggested chip layer. */
   keywordKeys: string[];
 };
@@ -24,7 +8,6 @@ export type Decorated = Article & {
 export function decorate(articles: Article[]): Decorated[] {
   return articles.map((a) => ({
     ...a,
-    designIds: designTagsFor(a),
     keywordKeys: a.keywords.map((k) => k.toLowerCase()),
   }));
 }
@@ -55,7 +38,6 @@ export function suggestKeywords(articles: Decorated[], limit = 24) {
 
 export type FilterState = {
   topics: string[];
-  designs: string[];
   keywords: string[];
   journals: string[];
   /** "any" keeps everything; "oa" keeps only open-access articles. */
@@ -65,7 +47,6 @@ export type FilterState = {
 
 export const EMPTY_FILTERS: FilterState = {
   topics: [],
-  designs: [],
   keywords: [],
   journals: [],
   access: "any",
@@ -75,7 +56,6 @@ export const EMPTY_FILTERS: FilterState = {
 export function countActive(f: FilterState): number {
   return (
     f.topics.length +
-    f.designs.length +
     f.keywords.length +
     f.journals.length +
     (f.access === "oa" ? 1 : 0)
@@ -85,8 +65,7 @@ export function countActive(f: FilterState): number {
 /**
  * Filtering rule, chosen deliberately: chips *within* a layer are OR'd, and the
  * layers are AND'd together. So picking ADHD + Autism widens the feed, while
- * picking ADHD + "Randomized trial" narrows it. That matches how you would say
- * it out loud — "ADHD or autism work, but only the trials."
+ * adding a keyword or a journal on top narrows it.
  */
 export function applyFilters(
   articles: Decorated[],
@@ -96,7 +75,6 @@ export function applyFilters(
 ): Decorated[] {
   return articles.filter((a) => {
     if (f.topics.length && !a.topicIds.some((t) => f.topics.includes(t))) return false;
-    if (f.designs.length && !a.designIds.some((d) => f.designs.includes(d))) return false;
     if (f.keywords.length && !a.keywordKeys.some((k) => f.keywords.includes(k))) return false;
     if (f.journals.length && !f.journals.includes(a.journalId)) return false;
     if (f.access === "oa" && !a.isOA) return false;
@@ -116,13 +94,12 @@ export function chipCounts(
   f: FilterState,
   seen: ReadonlySet<string>,
   saved: ReadonlySet<string>,
-  layer: "topics" | "designs" | "keywords",
+  layer: "topics" | "keywords",
 ) {
   const base = applyFilters(articles, { ...f, [layer]: [] }, seen, saved);
   const counts = new Map<string, number>();
   for (const a of base) {
-    const keys =
-      layer === "topics" ? a.topicIds : layer === "designs" ? a.designIds : a.keywordKeys;
+    const keys = layer === "topics" ? a.topicIds : a.keywordKeys;
     for (const k of new Set(keys)) counts.set(k, (counts.get(k) ?? 0) + 1);
   }
   return counts;
