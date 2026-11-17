@@ -735,9 +735,8 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               I-O/Quant Psych Research Feed
             </a>{" "}
             by the STATS Lab at Claremont McKenna College, who worked out the idea
-            first — a journal feed you filter by clicking rather than by searching.
-            This version points the same idea at child, family, and clinical
-            psychology.
+            first. This version, developed by Kailee Kodama Muscente, uses the same
+            idea to review child, family, and clinical psychology.
           </p>
           <p>
             Data from <a href="https://openalex.org">OpenAlex</a>, refreshed hourly.

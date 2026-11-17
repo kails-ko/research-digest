@@ -468,16 +468,18 @@ export type Lens = {
 
 export const LENSES: Lens[] = [
   {
+    // The id stays as it was so that any edits you have already made to this
+    // lens survive the rename — overrides are keyed by id, not by label.
     id: "adhd-families",
-    label: "ADHD & families",
-    blurb: "ADHD alongside family process, parenting, attachment, and caregiver support",
-    topics: ["T10537", "T10585", "kw:parenting", "T11632", "T10677"],
+    label: "Families & Parents",
+    blurb: "Articles on family process, parenting, attachment, and caregiver support",
+    topics: ["T10585", "kw:parenting", "T11632", "T10677"],
   },
   {
     id: "parent-training",
-    label: "Treatments for ADHD",
-    blurb: "ADHD articles that are also about psychotherapy",
-    // "all", so this is ADHD *and* treatment rather than either one.
+    label: "ADHD Treatments",
+    blurb: "Articles tagged specifically with psychotherapy & ADHD",
+    // "all", so an article must carry both tags, not either one.
     topics: ["T10537", "T10214"],
     mode: "all",
   },

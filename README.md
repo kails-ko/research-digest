@@ -2,8 +2,9 @@
 
 Built after the [I-O/Quant Psych Research Feed](https://stats-lab-research-feed.vercel.app/)
 by the STATS Lab at Claremont McKenna College, who worked out the idea first.
-This version points it at child, family, and clinical psychology, and replaces
-typed keywords with click-only filtering.
+This version, developed by Kailee Kodama Muscente, uses the same idea to review
+child, family, and clinical psychology, replacing typed keywords with click-only
+filtering.
 
 A personal feed of everything published in the last 30 days across 34 child,
 family, and clinical psychology journals. Data comes from
