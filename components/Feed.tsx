@@ -99,12 +99,11 @@ export default function Feed({ feed }: { feed: FeedResult }) {
       <header className="masthead">
         <div className="shell">
           <p className="kicker">Child, family, &amp; clinical psychology</p>
-          <h1>Research Feed</h1>
+          <h1>Research Digest</h1>
           <p className="sub">
             Everything published in the last 30 days across {JOURNALS.length} journals,
             pulled from OpenAlex. Filter by clicking — the topics below come from
-            OpenAlex&rsquo;s own classification of each article, so there is nothing to
-            type and nothing to spell right.
+            OpenAlex&rsquo;s own classification of each article.
           </p>
           <div className="statbar">
             <span className="stat">

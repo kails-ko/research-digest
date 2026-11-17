@@ -1,4 +1,4 @@
-# Research Feed
+# Research Digest
 
 A personal feed of everything published in the last 30 days across 23 child,
 family, and clinical psychology journals. Data comes from
