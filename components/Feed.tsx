@@ -186,8 +186,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     <>
       <header className="masthead">
         <div className="shell">
-          <p className="kicker">Child, family, &amp; clinical psychology</p>
-          <h1>Research Digest</h1>
+          <h1>Child &amp; Adolescent Clinical Research Digest</h1>
           <p className="sub">
             Your personal research feed of everything published within the last 30
             days. Covers {JOURNALS.length} journals on child and adolescent
@@ -663,6 +662,20 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         )}
 
         <footer className="foot">
+          <p>
+            Built after the{" "}
+            <a
+              href="https://stats-lab-research-feed.vercel.app/"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              I-O/Quant Psych Research Feed
+            </a>{" "}
+            by the STATS Lab at Claremont McKenna College, who worked out the idea
+            first — a journal feed you filter by clicking rather than by searching.
+            This version points the same idea at child, family, and clinical
+            psychology.
+          </p>
           <p>
             Data from <a href="https://openalex.org">OpenAlex</a>, refreshed hourly.
             Window: articles published since {feed.since}. What you&rsquo;ve read and

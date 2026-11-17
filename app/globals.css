@@ -1181,3 +1181,7 @@ button {
   cursor: not-allowed;
   text-decoration: none;
 }
+
+.foot p + p {
+  margin-top: 10px;
+}
