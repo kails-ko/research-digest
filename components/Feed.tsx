@@ -49,8 +49,14 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     lensStore.getSnapshot,
     lensStore.getServerSnapshot,
   );
+  const overrides = useSyncExternalStore(
+    lensStore.subscribe,
+    lensStore.getOverrides,
+    lensStore.getServerOverrides,
+  );
   const [newLensName, setNewLensName] = useState("");
-  const [savingLens, setSavingLens] = useState(false);
+  /** null = closed, "new" = saving a new lens, otherwise the lens id being edited. */
+  const [editing, setEditing] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   // Collapsed by default: the full chip set is five rows tall and would push the
   // feed itself below the fold on every visit.
@@ -97,18 +103,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     });
   }
 
-  function applyLens(lensId: string) {
-    const lens = LENSES.find((l) => l.id === lensId);
-    if (!lens) return;
-    setFilters((f) => {
-      const same =
-        f.topics.length === lens.topics.length &&
-        lens.topics.every((t) => f.topics.includes(t));
-      // Clicking the lens you are already on clears it, so it reads as a toggle.
-      if (same) return { ...f, topics: [] };
-      return { ...f, topics: [...lens.topics] };
-    });
-  }
 
   const visible = useMemo(
     () => applyFilters(articles, filters, seen, saved),
@@ -140,11 +134,32 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   );
   const active = countActive(filters);
 
-  const activeLens = LENSES.find(
-    (l) =>
-      l.topics.length === filters.topics.length &&
-      l.topics.every((t) => filters.topics.includes(t)),
-  );
+  const currentSearch = search.replace(/^\?/, "");
+  const hasOverrides = Object.keys(overrides).length > 0;
+
+  /**
+   * One list for the row: the lenses that ship with the app (with any rename or
+   * re-pointing applied, and hidden ones dropped), then the ones you saved. They
+   * behave identically, which is the point — a default is just a lens someone
+   * else named first.
+   */
+  const allLenses = useMemo(() => {
+    const defaults = LENSES.filter((l) => !overrides[l.id]?.hidden).map((l) => ({
+      id: l.id,
+      label: overrides[l.id]?.label ?? l.label,
+      blurb: overrides[l.id]?.search ? undefined : l.blurb,
+      search: overrides[l.id]?.search ?? serializeFilters({ ...EMPTY_FILTERS, topics: l.topics }),
+      isDefault: true,
+    }));
+    const mine = customLenses.map((l) => ({
+      id: l.id,
+      label: l.label,
+      blurb: undefined,
+      search: l.search,
+      isDefault: false,
+    }));
+    return [...defaults, ...mine];
+  }, [overrides, customLenses]);
 
   return (
     <>
@@ -187,33 +202,54 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           <div className="panel-head">
             <h2>Saved lenses</h2>
             <div className="right">
+              {hasOverrides && (
+                <button className="linkbtn" onClick={() => lensStore.restoreDefaults()}>
+                  Restore default lenses
+                </button>
+              )}
               <button className="linkbtn" onClick={copyShareLink}>
                 {copied ? "Link copied" : "Copy link to these filters"}
               </button>
               <button
                 className="btn btn-quiet"
                 disabled={active === 0}
-                onClick={() => setSavingLens((v) => !v)}
+                onClick={() => {
+                  setEditing("new");
+                  setNewLensName("");
+                }}
               >
                 Save current filters as a lens
               </button>
             </div>
           </div>
           <p className="hint">
-            One click applies a whole set of filters. The first six ship with the
-            app; anything you save is your own and stays in this browser. To move
-            one to another device or send it to someone, use{" "}
-            <b>Copy link to these filters</b> — a lens is just a link.
+            One click applies a whole set of filters. Every lens here can be
+            renamed, re-pointed at whatever filters you have on now, or removed —
+            including the ones that ship with the app, which <b>Restore default
+            lenses</b> brings back. To move a lens to another device or send it to
+            someone, use <b>Copy link to these filters</b>: a lens is just a link.
           </p>
 
-          {savingLens && (
+          {editing && (
             <form
               className="lensform"
               onSubmit={(e) => {
                 e.preventDefault();
-                lensStore.add(newLensName, serializeFilters(filters));
+                const name = newLensName.trim();
+                if (!name) return;
+                if (editing === "new") {
+                  lensStore.add(name, serializeFilters(filters));
+                } else if (editing.startsWith("custom-")) {
+                  lensStore.remove(editing);
+                  lensStore.add(name, serializeFilters(filters));
+                } else {
+                  lensStore.editDefault(editing, {
+                    label: name,
+                    search: serializeFilters(filters),
+                  });
+                }
+                setEditing(null);
                 setNewLensName("");
-                setSavingLens(false);
               }}
             >
               <input
@@ -225,37 +261,28 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 aria-label="Lens name"
               />
               <button className="btn" type="submit" disabled={!newLensName.trim()}>
-                Save lens
+                {editing === "new" ? "Save lens" : "Update lens"}
               </button>
               <button
                 className="btn btn-quiet"
                 type="button"
                 onClick={() => {
-                  setSavingLens(false);
+                  setEditing(null);
                   setNewLensName("");
                 }}
               >
                 Cancel
               </button>
-              <span className="filter-summary">Saves: {describeSearch(filters)}</span>
+              <span className="filter-summary">
+                {editing === "new" ? "Saves" : "Re-points it at"}:{" "}
+                {describeSearch(filters)}
+              </span>
             </form>
           )}
 
           <div className="lensrow">
-            {LENSES.map((l) => (
-              <button
-                key={l.id}
-                className="lens"
-                data-on={activeLens?.id === l.id}
-                onClick={() => applyLens(l.id)}
-              >
-                <strong>{l.label}</strong>
-                <span>{l.blurb}</span>
-              </button>
-            ))}
-
-            {customLenses.map((l) => {
-              const on = l.search === search.replace(/^\?/, "");
+            {allLenses.map((l) => {
+              const on = l.search === currentSearch;
               return (
                 <div key={l.id} className="lens lens-custom" data-on={on}>
                   <button
@@ -263,16 +290,31 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                     onClick={() => urlStore.set(on ? "" : l.search)}
                   >
                     <strong>{l.label}</strong>
-                    <span>{describeSearch(parseFilters(l.search))}</span>
+                    <span>{l.blurb ?? describeSearch(parseFilters(l.search))}</span>
                   </button>
-                  <button
-                    className="lens-delete"
-                    aria-label={`Delete the ${l.label} lens`}
-                    title="Delete this lens"
-                    onClick={() => lensStore.remove(l.id)}
-                  >
-                    ×
-                  </button>
+                  <span className="lens-tools">
+                    <button
+                      className="lens-edit"
+                      aria-label={`Rename the ${l.label} lens, or re-point it at the current filters`}
+                      title="Rename, or re-point at the current filters"
+                      onClick={() => {
+                        setEditing(l.id);
+                        setNewLensName(l.label);
+                      }}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      className="lens-delete"
+                      aria-label={`Remove the ${l.label} lens`}
+                      title="Remove this lens"
+                      onClick={() =>
+                        l.isDefault ? lensStore.hideDefault(l.id) : lensStore.remove(l.id)
+                      }
+                    >
+                      ×
+                    </button>
+                  </span>
                 </div>
               );
             })}
@@ -403,13 +445,19 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         {/* ------------------------------------------------ toolbar */}
         <div className="toolbar">
           <div className="segmented">
-            {(["all", "unseen", "saved"] as const).map((s) => (
+            {(["all", "unseen", "read", "saved"] as const).map((s) => (
               <button
                 key={s}
                 data-on={filters.status === s}
                 onClick={() => setFilters((f) => ({ ...f, status: s }))}
               >
-                {s === "all" ? "All" : s === "unseen" ? "Unread" : "Saved"}
+                {s === "all"
+                  ? "All"
+                  : s === "unseen"
+                    ? "Unread"
+                    : s === "read"
+                      ? "Read"
+                      : "Saved"}
               </button>
             ))}
           </div>

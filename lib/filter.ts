@@ -17,8 +17,10 @@ export function decorate(articles: Article[]): Decorated[] {
     const keywordKeys = a.keywords.map((k) => k.toLowerCase());
     const chipIds = [
       ...a.topicIds.filter((t) => TOPIC_BY_ID.has(t)),
-      ...KEYWORD_CHIPS.filter((c) =>
-        (c.keywords ?? []).some((k) => keywordKeys.includes(k.toLowerCase())),
+      ...KEYWORD_CHIPS.filter(
+        (c) =>
+          (c.keywords ?? []).some((k) => keywordKeys.includes(k.toLowerCase())) ||
+          (c.topics ?? []).some((t) => a.topicIds.includes(t)),
       ).map((c) => c.id),
     ];
     return { ...a, keywordKeys, chipIds };
@@ -55,7 +57,7 @@ export type FilterState = {
   journals: string[];
   /** "any" keeps everything; "oa" keeps only open-access articles. */
   access: "any" | "oa";
-  status: "all" | "unseen" | "saved";
+  status: "all" | "unseen" | "read" | "saved";
   /** "date" keeps the weekly buckets; "unread" puts everything unread first. */
   sort: "date" | "unread";
 };
@@ -95,6 +97,7 @@ export function applyFilters(
     if (f.journals.length && !f.journals.includes(a.journalId)) return false;
     if (f.access === "oa" && !a.isOA) return false;
     if (f.status === "unseen" && seen.has(a.id)) return false;
+    if (f.status === "read" && !seen.has(a.id)) return false;
     if (f.status === "saved" && !saved.has(a.id)) return false;
     return true;
   });

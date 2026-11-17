@@ -96,6 +96,12 @@ curl "https://api.openalex.org/topics?search=school+refusal&select=id,display_na
 
 **Change the window** — `WINDOW_DAYS` in `lib/openalex.ts` (currently 30).
 
+**Every lens is editable in the app**, defaults included: ✎ renames one or
+re-points it at whatever filters are on now, × removes it, and *Restore default
+lenses* undoes any change to the ones that ship with the app. Edits to a
+default are stored as overrides (`research-feed.lens-overrides.v1`) rather than
+by rewriting the default, which is what makes restoring always possible.
+
 **Add a lens** — two ways now. In the app, set some filters and press *Save
 current filters as a lens*; it is stored in your browser under
 `research-feed.lenses.v1` and is yours alone. `LENSES` in `lib/topics.ts` holds

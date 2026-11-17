@@ -979,15 +979,23 @@ button {
   font-weight: 700;
 }
 
-/* The free-PDF link on an open-access card. Pink marks it as the one action
-   that leaves the app with a file, without competing with the Indigo
-   actions beside it. */
+/* The free-PDF link on an open-access card. Gold, but as a filled pill with
+   Navy text rather than gold text: Amber only reaches 1.8:1 against Ground, so
+   the brand kit allows it as a fill and never as a bare link colour. The pill
+   also makes it read as the one action that leaves the app with a file. */
 .pdflink {
-  color: var(--pink);
+  background: var(--amber);
+  color: var(--navy);
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 999px;
+  padding: 2px 11px;
+  font-size: 0.8rem;
 }
 
 .pdflink:hover {
-  color: var(--red);
+  color: var(--navy);
+  opacity: 0.88;
 }
 
 .exportbar .btn {
@@ -1091,5 +1099,28 @@ button {
 }
 
 .lens-custom[data-on="true"] .lens-delete {
+  color: var(--navy);
+}
+
+.lens-tools {
+  display: flex;
+  align-items: center;
+  padding-right: 6px;
+}
+
+.lens-edit {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 10px 4px;
+}
+
+.lens-edit:hover {
+  color: var(--indigo);
+}
+
+.lens-custom[data-on="true"] .lens-edit {
   color: var(--navy);
 }

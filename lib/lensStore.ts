@@ -23,11 +23,24 @@ export type CustomLens = {
 };
 
 const KEY = "research-feed.lenses.v1";
+const OVERRIDE_KEY = "research-feed.lens-overrides.v1";
+
+/**
+ * How a built-in lens has been changed. Stored separately from custom lenses
+ * so that editing a default never destroys it — clearing the overrides brings
+ * every default back exactly as it shipped.
+ */
+export type LensOverride = {
+  label?: string;
+  search?: string;
+  hidden?: boolean;
+};
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
 
 let cache: CustomLens[] | undefined;
+let overrideCache: Record<string, LensOverride> | undefined;
 
 function read(): CustomLens[] {
   if (cache) return cache;
@@ -52,7 +65,30 @@ function write(next: CustomLens[]) {
   for (const fn of listeners) fn();
 }
 
+function readOverrides(): Record<string, LensOverride> {
+  if (overrideCache) return overrideCache;
+  try {
+    const raw = localStorage.getItem(OVERRIDE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Record<string, LensOverride>) : {};
+    overrideCache = parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    overrideCache = {};
+  }
+  return overrideCache;
+}
+
+function writeOverrides(next: Record<string, LensOverride>) {
+  overrideCache = next;
+  try {
+    localStorage.setItem(OVERRIDE_KEY, JSON.stringify(next));
+  } catch {
+    /* keep it in memory for this session */
+  }
+  for (const fn of listeners) fn();
+}
+
 const EMPTY: CustomLens[] = [];
+const EMPTY_OVERRIDES: Record<string, LensOverride> = {};
 
 export const lensStore = {
   subscribe(fn: Listener) {
@@ -81,6 +117,27 @@ export const lensStore = {
 
   remove(id: string) {
     write(read().filter((l) => l.id !== id));
+  },
+
+  /* ----- the built-in lenses, which are editable rather than fixed ----- */
+
+  getOverrides: readOverrides,
+  getServerOverrides: () => EMPTY_OVERRIDES,
+
+  /** Rename a built-in lens, re-point it at other filters, or both. */
+  editDefault(id: string, patch: LensOverride) {
+    const cur = readOverrides();
+    writeOverrides({ ...cur, [id]: { ...cur[id], ...patch } });
+  },
+
+  /** Hiding rather than deleting, so "Restore defaults" can always undo it. */
+  hideDefault(id: string) {
+    const cur = readOverrides();
+    writeOverrides({ ...cur, [id]: { ...cur[id], hidden: true } });
+  },
+
+  restoreDefaults() {
+    writeOverrides({});
   },
 };
 

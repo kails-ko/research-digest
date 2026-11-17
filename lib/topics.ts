@@ -42,6 +42,12 @@ export type TopicChip = {
   kind?: "topic" | "keyword";
   /** For a keyword chip: the exact OpenAlex keyword strings it matches. */
   keywords?: string[];
+  /**
+   * Extra OpenAlex Topic IDs to match as well. Lets one chip combine the
+   * precision of a Topic with the reach of a keyword — "Depression" is both
+   * the Treatment-of-Depression topic and the depression keywords.
+   */
+  topics?: string[];
 };
 
 export type TopicGroup = {
@@ -62,11 +68,27 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       { id: "T10426", label: "Abuse & maltreatment", openAlexName: "Child Abuse and Trauma" },
       { id: "T10242", label: "PTSD", openAlexName: "Posttraumatic Stress Disorder Research" },
       { id: "T10376", label: "Suicide & self-harm", openAlexName: "Suicide and Self-Harm Studies" },
-      { id: "T11123", label: "OCD spectrum", openAlexName: "Obsessive-Compulsive Spectrum Disorders" },
+      { id: "T11123", label: "OCD", openAlexName: "Obsessive-Compulsive Spectrum Disorders" },
       { id: "T10263", label: "Eating disorders", openAlexName: "Eating Disorders and Behaviors" },
       { id: "T10043", label: "Substance use", openAlexName: "Substance Abuse Treatment and Outcomes" },
       { id: "T10485", label: "Bullying & aggression", openAlexName: "Bullying, Victimization, and Aggression" },
-      { id: "T11071", label: "Depression treatment", openAlexName: "Treatment of Major Depression" },
+      {
+        id: "kw:depression",
+        label: "Depression",
+        openAlexName:
+          'OpenAlex topic "Treatment of Major Depression" plus the depression keywords',
+        kind: "keyword",
+        // The topic alone is specifically about *treatment*, so the keywords
+        // widen it to depression generally, which is what the label promises.
+        topics: ["T11071"],
+        keywords: [
+          "depression",
+          "depressive symptoms",
+          "adolescent depression",
+          "major depressive disorder",
+          "maternal depression",
+        ],
+      },
       { id: "T10316", label: "Sleep", openAlexName: "Sleep and related disorders" },
       {
         id: "kw:aces",
@@ -116,7 +138,28 @@ export const TOPIC_GROUPS: TopicGroup[] = [
     topics: [
       { id: "T10652", label: "Racial & ethnic identity", openAlexName: "Racial and Ethnic Identity Research" },
       { id: "T10156", label: "LGBTQ+", openAlexName: "LGBTQ Health, Identity, and Policy" },
-      { id: "T10762", label: "Migration & trauma", openAlexName: "Migration, Health and Trauma" },
+      {
+        id: "kw:immigration",
+        label: "Immigration",
+        openAlexName:
+          'OpenAlex topics "Migration, Health and Trauma" and "Migration, Refugees, and Integration"',
+        kind: "keyword",
+        // T10762 carries almost all of it in these journals (196 works over two
+        // years); T10216 adds the refugee and integration work (21).
+        topics: ["T10762", "T10216"],
+        keywords: [],
+      },
+      {
+        // 4. Acculturation. No OpenAlex Topic covers it — searching topics for
+        // "acculturation" returns racial identity and expatriate research — but
+        // it is a real keyword in these journals, just below the frequency
+        // cutoff that the "Hot this month" list uses.
+        id: "kw:acculturation",
+        label: "Acculturation",
+        openAlexName: 'OpenAlex keywords: "acculturation", "acculturation gap", "cultural adaptation"',
+        kind: "keyword",
+        keywords: ["acculturation", "acculturation gap", "cultural adaptation"],
+      },
       { id: "T10314", label: "Intergroup psychology", openAlexName: "Social and Intergroup Psychology" },
       { id: "T13101", label: "Justice & legal systems", openAlexName: "Legal and Social Justice Studies" },
       {
@@ -153,7 +196,6 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       { id: "T11519", label: "Digital interventions", openAlexName: "Digital Mental Health Interventions" },
       { id: "T10629", label: "Implementation & policy", openAlexName: "Health Policy Implementation Science" },
       { id: "T10708", label: "Mindfulness", openAlexName: "Mindfulness and Compassion Interventions" },
-      { id: "T13944", label: "Services & systems", openAlexName: "Psychiatric care and mental health services" },
       { id: "T11295", label: "Counseling & supervision", openAlexName: "Counseling Practices and Supervision" },
       { id: "T11028", label: "Social work practice", openAlexName: "Social Work Education and Practice" },
     ],
@@ -234,30 +276,20 @@ export const LENSES: Lens[] = [
   {
     id: "adhd-families",
     label: "ADHD & families",
-    blurb: "ADHD work that touches parenting, family process, or caregiver outcomes",
-    topics: ["T10537", "T10585", "T11632"],
+    blurb: "ADHD alongside family process, parenting, attachment, and caregiver support",
+    topics: ["T10537", "T10585", "kw:parenting", "T11632", "T10677"],
   },
   {
     id: "parent-training",
-    label: "Parent training",
-    blurb: "Parent-mediated and behavioral parent training work, and the problems it targets",
-    // T13143 is the closest OpenAlex has to a parent-training topic — it is what
-    // PCIT, video-feedback, and parent-mediated intervention papers land under.
-    // The other three widen it to the family-process and disruptive-behavior
-    // work that parent training is usually tested against.
-    topics: ["T13143", "T11632", "T10585", "T10485"],
+    label: "Parent training for ADHD",
+    blurb: "ADHD treatment: parent training, psychotherapy, CBT, and digital delivery",
+    topics: ["T10537", "kw:parent-training", "T10214", "kw:cbt", "T13143", "T11519"],
   },
   {
     id: "prevention",
     label: "Prevention & implementation",
-    blurb: "School- and community-based prevention, implementation, and access",
-    topics: ["T10629", "T10272", "T12831", "T10589"],
-  },
-  {
-    id: "treatment",
-    label: "Treatment & intervention",
-    blurb: "Psychotherapy, digital interventions, and mindfulness-based work",
-    topics: ["T10214", "T11519", "T10708"],
+    blurb: "Prevention, implementation, psychotherapy, and access to care",
+    topics: ["T10629", "T10272", "T10589", "T10214"],
   },
   {
     id: "trauma",
@@ -265,10 +297,5 @@ export const LENSES: Lens[] = [
     blurb: "Maltreatment, PTSD, family violence, foster care, and adoption",
     topics: ["T10426", "T10242", "T10380", "T11380"],
   },
-  {
-    id: "measurement",
-    label: "Measurement & methods",
-    blurb: "Psychometrics, scale development, and testing",
-    topics: ["T10467"],
-  },
 ];
+

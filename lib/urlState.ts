@@ -85,7 +85,10 @@ export function parseFilters(search: string): FilterState {
     keywords: list(KEYS.keywords),
     journals: list(KEYS.journals),
     access: p.get("oa") === "1" ? "oa" : "any",
-    status: status === "unseen" || status === "saved" ? status : "all",
+    status:
+      status === "unseen" || status === "read" || status === "saved"
+        ? status
+        : "all",
     sort: sort === "unread" ? "unread" : "date",
   };
 }
