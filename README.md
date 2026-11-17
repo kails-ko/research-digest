@@ -30,16 +30,16 @@ OpenAlex classifies every work into a fixed taxonomy of ~4,500 **Topics**. An
 article gets tagged `T10537` ("Attention Deficit Hyperactivity Disorder")
 because OpenAlex classified it that way, **not** because the word "ADHD" appears
 in it. So a paper titled *"Stimulant response in school-aged children"* shows up
-under the ADHD chip even though it never says ADHD.
+under the ADHD tag even though it never says ADHD.
 
-The chips in `lib/topics.ts` were not invented. They came from asking OpenAlex
+The tags in `lib/topics.ts` were not invented. They came from asking OpenAlex
 which topics actually occur in these 34 journals over the last 12 months:
 
 ```bash
 curl "https://api.openalex.org/works?filter=primary_location.source.id:S108595589|S60711021,from_publication_date:2025-11-16&group_by=topics.id&per-page=200"
 ```
 
-Every chip corresponds to something real articles in these journals carry,
+Every tag corresponds to something real articles in these journals carry,
 grouped into eight rows: Diagnoses & clinical concerns, Family & parenting,
 Identity/culture/equity, Interventions, Services/systems/prevention, Child
 Development, Emotion/cognition/coping, and Measurement & methods.
@@ -50,22 +50,22 @@ literatures. So is the split between **Child Development** and **Emotion,
 cognition, & coping** — the second holds processes rather than developmental
 content.
 
-The panel is **collapsed by default** — the full chip set is five rows tall and
+The Filters panel is **collapsed by default** — the full tag set is five rows tall and
 would otherwise push the feed below the fold on every visit. The header still
-reports how many chips are selected while it's shut, and **Deselect all** clears
+reports how many tags are selected while it's shut, and **Deselect all** clears
 both the topic and study-design rows in one click.
 
-Three chips are **keyword chips**, not topic chips: Parenting (under Family &
+Three tags are **keyword tags**, not topic tags: Parenting (under Family &
 caregiving), and Parent training and CBT (under Treatment, services, &
 prevention). OpenAlex has no Topic for any of them — searching its topics for
 "prevention" returns falls prevention and sports injuries — but all three exist
-as OpenAlex *keywords*, so those chips match keyword strings instead. They are
+as OpenAlex *keywords*, so those tags match keyword strings instead. They are
 marked `kind: "keyword"` in `lib/topics.ts` with the exact strings listed, and
 they are only as good as the keywords publishers supply.
 
-**How chips combine** — an **Any / All** switch in the Topics header. On *Any*
-(the default) topic chips OR together whichever group they sit in, so picking
-more of them widens the feed. On *All* they AND, so each chip narrows further —
+**How tags combine** — an **Any / All** switch in the Topics header. On *Any*
+(the default) topic tags OR together whichever group they sit in, so picking
+more of them widens the feed. On *All* they AND, so each tag narrows further —
 ADHD + Parenting goes from 33 articles to 1. The mode travels in the URL, so a
 shared lens keeps it. The Journals and "Hot this month" lists always AND.
 
@@ -78,9 +78,9 @@ them). This row changes every time the feed refreshes, so it surfaces
 terms you wouldn't have thought to search for — it's the feed telling you what
 is in it rather than you guessing.
 
-### 3. Lenses — one click, several chips
+### 3. Lenses — one click, several tags
 
-A lens is a named standing search: "ADHD & families" applies three topic chips
+A lens is a named standing search: "ADHD & families" applies three topic tags
 at once, and "Parent training" applies four. These are the real replacement for retyping the same query every
 week. Six ship in `LENSES` (`lib/topics.ts`); they are plain data, so add your
 own.
@@ -106,7 +106,7 @@ to fill in. Look the ID up rather than guessing it:
 curl "https://api.openalex.org/sources?search=Journal+of+Abnormal+Child+Psychology&select=id,display_name,issn_l"
 ```
 
-**Add a topic chip** — `lib/topics.ts`. Same idea:
+**Add a topic tag** — `lib/topics.ts`. Same idea:
 
 ```bash
 curl "https://api.openalex.org/topics?search=school+refusal&select=id,display_name"
@@ -152,7 +152,7 @@ One request per hour, not one per click.
 
 `app/page.tsx` fetches the whole 30-day window server-side inside a `"use cache"`
 function with `cacheLife("hours")`, then hands the normalized article list to
-the client as a single payload. Every chip click filters that payload in memory.
+the client as a single payload. Every tag click filters that payload in memory.
 OpenAlex sees one call an hour regardless of how much you click.
 
 Two things about the OpenAlex API are worth knowing, because both bit during
@@ -179,15 +179,15 @@ nothing else changes.
 
 ## What a card shows
 
-The tag row under a title holds **only the chips this feed defines** that the
-article matched — both topic chips and keyword chips. OpenAlex topics with no
-chip in `lib/topics.ts` are not shown, which is deliberate: OpenAlex hangs
+The tag row under a title holds **only the tags this feed defines** that the
+article matched — both topic tags and keyword tags. OpenAlex topics with no
+tag in `lib/topics.ts` are not shown, which is deliberate: OpenAlex hangs
 several very generic topics ("Psychology and Mental Health") on almost
 everything.
 
 Press **Show abstract** and a second row appears with **all** of OpenAlex's
 keywords for that article, unfiltered — that is where to look for a term the
-chips don't cover.
+tags don't cover.
 
 ## New since your last visit
 
@@ -237,7 +237,7 @@ Two deliberate choices worth flagging:
   `color-scheme: light` says so explicitly instead.
 
 The kit's colorblind and grayscale findings (Amber/Pistachio/Blush collapse
-together) don't bite here: every chip carries its own text label, so color is
+together) don't bite here: every tag carries its own text label, so color is
 never the only thing distinguishing one from another.
 
 ---

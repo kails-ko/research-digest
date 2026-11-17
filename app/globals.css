@@ -607,12 +607,11 @@ button {
   color: var(--navy);
 }
 
-/* A tag that matches a chip you have selected. Amber — the kit's Action
-   color — so the thing you picked reads as active rather than as just another
-   category swatch. Navy text, per the kit's text-color rule. */
+/* A tag on an article that matches one you have selected. Pistachio, with
+   Navy text per the kit's text-color rule. */
 .tag[data-match="true"] {
-  background: var(--amber);
-  border-color: var(--amber);
+  background: var(--pistachio);
+  border-color: var(--pistachio);
   color: var(--navy);
   font-weight: 700;
 }
@@ -860,11 +859,7 @@ button {
 }
 
 @media (max-width: 720px) {
-  /* Let the header row wrap so the trigger gets a line of its own and can
-     stretch; without this the flex row shrinks it to its text width. */
-  .panel-head .right {
-    width: 100%;
-  }
+  .filter-list,
   .ms {
     width: 100%;
   }
@@ -1184,4 +1179,156 @@ button {
 
 .foot p + p {
   margin-top: 10px;
+}
+
+/* ===================================================== phone optimisation */
+
+/* Journals + Hot this month, side by side inside the Filters panel. */
+.filter-lists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 22px;
+  margin: 12px 0 4px;
+}
+
+.filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--mono);
+  color: var(--indigo);
+}
+
+.tagbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+
+.tagbar .group-label {
+  margin: 0;
+}
+
+.tagbar .right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 720px) {
+  /* The masthead was 422px of a 812px screen. Tighten the type and let the
+     stats run as one scrollable line instead of stacking four deep. */
+  .masthead {
+    padding: 20px 0 18px;
+    margin-bottom: 16px;
+  }
+  .masthead h1 {
+    font-size: 1.6rem;
+  }
+  .masthead p.sub {
+    font-size: 0.92rem;
+    margin-top: 8px;
+  }
+  .statbar {
+    margin-top: 14px;
+    gap: 6px 16px;
+  }
+  .stat b {
+    font-size: 1.1rem;
+  }
+  .stat span {
+    font-size: 0.8rem;
+  }
+
+  .panel {
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+
+  /* Saved lenses were 617px — four stacked cards, each with a blurb. On a
+     phone they become a single swipeable row of names; the blurb is desktop
+     affordance, not something you read on a 375px screen. */
+  .lensrow {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    margin: 0 -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .lens {
+    flex: 0 0 auto;
+    max-width: none;
+    scroll-snap-align: start;
+  }
+  .lens-apply span,
+  .lens > span {
+    display: none;
+  }
+  .lens-apply strong {
+    white-space: nowrap;
+  }
+  .lens-apply {
+    padding: 8px 4px 8px 12px;
+  }
+
+  /* The explanatory lines are for a first read on a wide screen; on a phone
+     they cost a third of a viewport each. The Filters panel keeps its own,
+     since that one is only visible once you have opened the panel. */
+  .panel > .hint {
+    display: none;
+  }
+  #filter-body .hint {
+    display: block;
+  }
+
+  /* Keep the status/sort controls reachable without scrolling back up. */
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    padding: 10px 0;
+    gap: 8px;
+  }
+  .toolbar .right {
+    gap: 8px;
+  }
+  .segmented button {
+    padding: 5px 11px;
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 720px) {
+  /* A disabled action is pure clutter on a phone — "Restore default lenses"
+     and "Save current filters as a lens" are both disabled on a first visit,
+     and together they cost about a third of a viewport. */
+  .panel-head .linkbtn:disabled,
+  .panel-head .btn:disabled {
+    display: none;
+  }
+
+  .panel-head {
+    gap: 8px 12px;
+    margin-bottom: 0;
+  }
+
+  .panel-head h2 {
+    font-size: 0.98rem;
+  }
+
+  /* The Filters panel is a heading plus one button; let them share a line. */
+  .panel-head .right {
+    margin-left: auto;
+  }
 }

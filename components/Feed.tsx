@@ -71,9 +71,10 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   /** null = closed, "new" = saving a new lens, otherwise the lens id being edited. */
   const [editing, setEditing] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  // Collapsed by default: the full chip set is five rows tall and would push the
-  // feed itself below the fold on every visit.
-  const [showTopics, setShowTopics] = useState(false);
+  // Collapsed by default. Open, the tag rows are many screens tall on a phone;
+  // measured on a 375px viewport, leaving them out moves the first article from
+  // 2.4 screens down to under one.
+  const [showFilters, setShowFilters] = useState(false);
   const [showExport, setShowExport] = useState(false);
 
   // What you've read and saved lives in localStorage, which React treats as an
@@ -353,58 +354,112 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           </div>
         </section>
 
-        {/* ------------------------------------------------ topics */}
+        {/* ------------------------------------- filters: one panel, not three */}
         <section className="panel">
           <div className="panel-head">
-            <h2>Topics</h2>
+            <h2>Filters</h2>
             <div className="right">
-              {topicPanelActive > 0 && (
+              {active > 0 && (
                 <>
                   <span className="filter-summary">
-                    <b>{topicPanelActive}</b> selected
+                    <b>{active}</b> on
                   </span>
-                  <span className="segmented segmented-sm" role="group" aria-label="How topic chips combine">
-                    <button
-                      data-on={filters.topicMode === "any"}
-                      title="An article qualifies if it matches any selected chip"
-                      onClick={() => setFilters((f) => ({ ...f, topicMode: "any" }))}
-                    >
-                      Any
-                    </button>
-                    <button
-                      data-on={filters.topicMode === "all"}
-                      title="An article must match every selected chip"
-                      onClick={() => setFilters((f) => ({ ...f, topicMode: "all" }))}
-                    >
-                      All
-                    </button>
-                  </span>
-                  <button className="linkbtn" onClick={deselectAllTopics}>
-                    Deselect all
+                  <button
+                    className="linkbtn"
+                    onClick={() =>
+                      setFilters((f) => ({ ...EMPTY_FILTERS, status: f.status, sort: f.sort }))
+                    }
+                  >
+                    Clear all
                   </button>
                 </>
               )}
               <button
                 className="btn btn-quiet"
-                aria-expanded={showTopics}
-                aria-controls="topic-chips"
-                onClick={() => setShowTopics((v) => !v)}
+                aria-expanded={showFilters}
+                aria-controls="filter-body"
+                onClick={() => setShowFilters((v) => !v)}
               >
-                {showTopics ? "Hide topics" : "Show topics"}
+                {showFilters ? "Hide" : "Show"}
               </button>
             </div>
           </div>
 
-          {/* The description sits outside the collapsible region so it explains
-              the section even while the chips are hidden. */}
-          <p className="hint">
-            These chips come from OpenAlex&rsquo;s own classification, so an article
-            counts as &ldquo;ADHD&rdquo; whether or not it uses the word.
-          </p>
+          {/* Kept mounted but hidden, so selections and scroll position survive a
+              collapse — and so the count above stays truthful. */}
+          <div id="filter-body" hidden={!showFilters}>
+            <div className="filter-lists">
+              <label className="filter-list">
+                <span>Journals</span>
+                <MultiSelect
+                  placeholder={`All ${JOURNALS.length}`}
+                  noun="journal"
+                  options={JOURNALS.map((j) => ({
+                    value: j.id,
+                    label: j.name,
+                    count: articles.filter((a) => a.journalId === j.id).length,
+                  }))}
+                  selected={filters.journals}
+                  onToggle={(v) => toggleIn("journals", v)}
+                  onClear={() => setFilters((f) => ({ ...f, journals: [] }))}
+                />
+              </label>
 
-          {/* Kept mounted but hidden, so chip state and scroll position survive
-              a collapse — and so the selected count above stays truthful. */}
-          <div id="topic-chips" hidden={!showTopics}>
+              {suggested.length > 0 && (
+                <label className="filter-list">
+                  <span>Hot this month</span>
+                  <MultiSelect
+                    placeholder="Pick keywords"
+                    noun="keyword"
+                    options={suggested.map((s) => ({
+                      value: s.key,
+                      label: s.label,
+                      count: keywordCounts.get(s.key) ?? 0,
+                    }))}
+                    selected={filters.keywords}
+                    onToggle={(v) => toggleIn("keywords", v)}
+                    onClear={() => setFilters((f) => ({ ...f, keywords: [] }))}
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="tagbar">
+              <span className="group-label">Tags</span>
+              <span className="right">
+                <span
+                  className="segmented segmented-sm"
+                  role="group"
+                  aria-label="How tags combine"
+                >
+                  <button
+                    data-on={filters.topicMode === "any"}
+                    title="An article qualifies if it matches any selected tag"
+                    onClick={() => setFilters((f) => ({ ...f, topicMode: "any" }))}
+                  >
+                    Any
+                  </button>
+                  <button
+                    data-on={filters.topicMode === "all"}
+                    title="An article must match every selected tag"
+                    onClick={() => setFilters((f) => ({ ...f, topicMode: "all" }))}
+                  >
+                    All
+                  </button>
+                </span>
+                {topicPanelActive > 0 && (
+                  <button className="linkbtn" onClick={deselectAllTopics}>
+                    Deselect tags
+                  </button>
+                )}
+              </span>
+            </div>
+
+            <p className="hint">
+              These tags come from OpenAlex&rsquo;s own classification, so an article
+              counts as &ldquo;ADHD&rdquo; whether or not it uses the word.
+            </p>
+
             {TOPIC_GROUPS.map((g) => (
               <div key={g.name}>
                 <span className="group-label">{g.name}</span>
@@ -432,59 +487,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             ))}
           </div>
         </section>
-
-        {/* --------------------------------- keywords + journals, side by side */}
-        <div className="panel-row">
-          <section className="panel">
-            <div className="panel-head">
-              <h2>Journals</h2>
-              <div className="right">
-                <MultiSelect
-                  placeholder={`All ${JOURNALS.length} journals`}
-                  noun="journal"
-                  options={JOURNALS.map((j) => ({
-                    value: j.id,
-                    label: j.name,
-                    count: articles.filter((a) => a.journalId === j.id).length,
-                  }))}
-                  selected={filters.journals}
-                  onToggle={(v) => toggleIn("journals", v)}
-                  onClear={() => setFilters((f) => ({ ...f, journals: [] }))}
-                />
-              </div>
-            </div>
-            <p className="hint">
-              Results from all journals are automatically displayed. Check a few to
-              narrow the feed.
-            </p>
-          </section>
-
-          {suggested.length > 0 && (
-            <section className="panel">
-              <div className="panel-head">
-                <h2>Hot this month</h2>
-                <div className="right">
-                  <MultiSelect
-                    placeholder="Pick keywords"
-                    noun="keyword"
-                    options={suggested.map((s) => ({
-                      value: s.key,
-                      label: s.label,
-                      count: keywordCounts.get(s.key) ?? 0,
-                    }))}
-                    selected={filters.keywords}
-                    onToggle={(v) => toggleIn("keywords", v)}
-                    onClear={() => setFilters((f) => ({ ...f, keywords: [] }))}
-                  />
-                </div>
-              </div>
-              <p className="hint">
-                The keywords OpenAlex attached to this month&rsquo;s articles, most
-                common first. This list changes with the feed.
-              </p>
-            </section>
-          )}
-        </div>
 
         {/* ------------------------------------------------ toolbar */}
         <div className="toolbar">
@@ -636,7 +638,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             <p>
               {articles.length === 0
                 ? "No articles came back from OpenAlex for the last 30 days."
-                : "Try removing a chip — chips in different rows narrow the feed, not widen it."}
+                : "Try removing a tag, or switch tag matching from All to Any."}
             </p>
           </div>
         ) : (
