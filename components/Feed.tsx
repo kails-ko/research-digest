@@ -400,9 +400,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               the section even while the chips are hidden. */}
           <p className="hint">
             These chips come from OpenAlex&rsquo;s own classification, so an article
-            counts as &ldquo;ADHD&rdquo; whether or not it uses the word. Pick as many
-            as you like — on <b>Any</b> you get everything matching at least one, on{" "}
-            <b>All</b> only what matches every one.
+            counts as &ldquo;ADHD&rdquo; whether or not it uses the word.
           </p>
 
           {/* Kept mounted but hidden, so chip state and scroll position survive
@@ -483,8 +481,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               </div>
               <p className="hint">
                 The keywords OpenAlex attached to this month&rsquo;s articles, most
-                common first. This list changes with the feed, so it might contain
-                some terms you haven&rsquo;t thought to search for.
+                common first. This list changes with the feed.
               </p>
             </section>
           )}
