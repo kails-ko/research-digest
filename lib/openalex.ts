@@ -33,6 +33,8 @@ export type Article = {
   type: string;
   isOA: boolean;
   oaUrl: string | null;
+  /** A direct link to the PDF where OpenAlex knows one, for open-access work. */
+  pdfUrl: string | null;
   landingUrl: string | null;
   /** OpenAlex Topic IDs, used by the topic chips. */
   topicIds: string[];
@@ -58,6 +60,7 @@ type OAWork = {
     pdf_url: string | null;
   } | null;
   open_access: { is_oa: boolean; oa_url: string | null };
+  best_oa_location: { pdf_url: string | null; landing_page_url: string | null } | null;
   topics: { id: string; display_name: string }[];
   keywords: { display_name: string }[];
 };
@@ -97,6 +100,7 @@ const SELECT = [
   "authorships",
   "primary_location",
   "open_access",
+  "best_oa_location",
   "topics",
   "keywords",
 ].join(",");
@@ -125,6 +129,11 @@ function normalize(w: OAWork): Article | null {
     type: w.type,
     isOA: w.open_access?.is_oa ?? false,
     oaUrl: w.open_access?.oa_url ?? w.primary_location?.pdf_url ?? null,
+    // best_oa_location is the freely readable copy OpenAlex considers best —
+    // often a repository (PMC) rather than the publisher. Its pdf_url is a
+    // direct file link; oa_url is sometimes only a landing page.
+    pdfUrl:
+      w.best_oa_location?.pdf_url ?? w.primary_location?.pdf_url ?? null,
     landingUrl: w.primary_location?.landing_page_url ?? (w.doi ?? null),
     topicIds: (w.topics ?? []).map((t) => t.id.split("/").pop() ?? t.id),
     topicNames: (w.topics ?? []).map((t) => t.display_name),

@@ -951,40 +951,51 @@ button {
   display: block;
 }
 
-.exporthead strong {
-  display: block;
-  font-family: var(--display);
+.exportbar .panel-head h2 {
   font-size: 1rem;
-  color: var(--indigo);
-  margin-bottom: 4px;
 }
 
-.exporthead p {
-  margin: 0 0 8px;
+.exportintro {
+  margin: 10px 0 8px;
   font-size: 0.86rem;
   color: var(--navy);
   max-width: 76ch;
 }
 
-.exporthead ol {
+.exportbar ol {
   margin: 0 0 14px;
   padding-left: 20px;
   font-size: 0.86rem;
   max-width: 76ch;
 }
 
-.exporthead li {
+.exportbar li {
   margin-bottom: 4px;
 }
 
-.exporthead em,
+.exportbar em,
 .exporthint em {
   font-style: normal;
   font-weight: 700;
 }
 
+/* The free-PDF link on an open-access card. Pink marks it as the one action
+   that leaves the app with a file, without competing with the Indigo
+   actions beside it. */
+.pdflink {
+  color: var(--pink);
+}
+
+.pdflink:hover {
+  color: var(--red);
+}
+
 .exportbar .btn {
   margin-right: 10px;
+}
+
+.exportbar .panel-head .btn {
+  margin-right: 0;
 }
 
 .exportbar .exporthint {

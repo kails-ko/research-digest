@@ -143,6 +143,20 @@ export default function ArticleCard({
         <button className="linkbtn" onClick={copyCitation}>
           {copied ? "Citation copied" : "Copy APA citation"}
         </button>
+        {a.isOA && (a.pdfUrl ?? a.oaUrl) && (
+          /* Open access only. The file is on the publisher's or a repository's
+             server, so the browser opens it rather than saving it straight to
+             disk — cross-origin downloads can't be forced from here. Save it
+             from the viewer once it's open. */
+          <a
+            className="linkbtn pdflink"
+            href={(a.pdfUrl ?? a.oaUrl) as string}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            PDF (free)
+          </a>
+        )}
         {a.doi && <span className="doi mono">{a.doi}</span>}
       </div>
     </article>

@@ -27,6 +27,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   // Collapsed by default: the full chip set is five rows tall and would push the
   // feed itself below the fold on every visit.
   const [showTopics, setShowTopics] = useState(false);
+  const [showExport, setShowExport] = useState(false);
 
   // What you've read and saved lives in localStorage, which React treats as an
   // external store. The server snapshot is deliberately empty — the server has
@@ -99,7 +100,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         : groupByRecency(visible),
     [visible, filters.sort, seen],
   );
-  const unseenCount = articles.filter((a) => !seen.has(a.id)).length;
   const active = countActive(filters);
 
   const activeLens = LENSES.find(
@@ -123,10 +123,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             <span className="stat">
               <b>{articles.length}</b>
               <span>articles this month</span>
-            </span>
-            <span className="stat">
-              <b>{unseenCount}</b>
-              <span>unread</span>
             </span>
             <span className="stat">
               <b>{saved.size}</b>
@@ -291,8 +287,8 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               </div>
               <p className="hint">
                 The keywords OpenAlex attached to this month&rsquo;s articles, most
-                common first. This list changes with the feed, so it surfaces terms
-                you wouldn&rsquo;t have thought to search for.
+                common first. This list changes with the feed, so it might contain
+                some terms you haven&rsquo;t thought to search for.
               </p>
             </section>
           )}
@@ -357,24 +353,39 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             you have saved, not on what the filters are currently showing. */}
         {savedArticles.length > 0 && (
           <div className="exportbar">
-            <div className="exporthead">
-              <strong>
+            <div className="panel-head">
+              <h2>
                 Send your {savedArticles.length} saved{" "}
                 {savedArticles.length === 1 ? "article" : "articles"} to a reference
                 manager
-              </strong>
-              <p>
+              </h2>
+              <button
+                className="btn btn-quiet"
+                aria-expanded={showExport}
+                aria-controls="export-steps"
+                onClick={() => setShowExport((v) => !v)}
+              >
+                {showExport ? "Hide" : "How it works"}
+              </button>
+            </div>
+
+            <div id="export-steps" hidden={!showExport}>
+              <p className="exportintro">
                 Download a file here, then import it into your reference manager —
                 it will create a record for each article, with authors, title,
                 journal, year, DOI, abstract, and keywords already filled in.
               </p>
               <ol>
                 <li>
+                  As you skim through articles, save the ones that you are
+                  interested in.
+                </li>
+                <li>
                   Pick a format. <b>RIS</b> works nearly everywhere — Zotero,
                   EndNote, Mendeley, Papers, RefWorks. <b>BibTeX</b> is for LaTeX
                   and Overleaf.
                 </li>
-                <li>Download the file. It lands in your Downloads folder.</li>
+                <li>Download the file.</li>
                 <li>
                   Import it: <em>Zotero</em> File &rarr; Import; <em>EndNote</em>{" "}
                   File &rarr; Import &rarr; choose &ldquo;Reference Manager
@@ -407,11 +418,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             >
               Download BibTeX
             </button>
-            <p className="exporthint">
+            <p className="exporthint" hidden={!showExport}>
               Volume, issue, and page numbers are left out on purpose — for
               online-first articles those are often wrong or missing in OpenAlex.
               Your reference manager can fill them in from the DOI (in Zotero,
-              right-click &rarr; <em>Update metadata</em>).
+              right-click &rarr; <em>Update metadata</em>). The file holds
+              reference details only, not the articles themselves — use the{" "}
+              <b>PDF</b> link on an open-access article for that.
             </p>
           </div>
         )}

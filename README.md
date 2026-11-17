@@ -154,9 +154,14 @@ They deliberately leave out volume, issue, and page numbers: OpenAlex's biblio
 fields are unreliable for online-first articles, which is most of a 30-day
 window, and Zotero fills them from the DOI anyway via "Update metadata".
 
-It all happens in the browser — no Zotero account, no API key, nothing
-uploaded — so it works the same for anyone using the app. The code is in
-`lib/export.ts`.
+It all happens in the browser — no account, no API key, nothing uploaded — so
+it works the same for anyone using the app. The code is in `lib/export.ts`.
+
+**The export carries reference details, not the articles.** For the article
+itself, open-access cards have a **PDF (free)** link, taken from OpenAlex's
+`best_oa_location.pdf_url` (often a repository copy rather than the
+publisher's). It opens the file rather than saving it, because a cross-origin
+download can't be forced from the page.
 
 ## Branding
 
