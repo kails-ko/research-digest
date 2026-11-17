@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import type { FeedResult } from "@/lib/openalex";
 import {
   EMPTY_FILTERS,
@@ -19,11 +19,39 @@ import { savedStore, seenStore } from "@/lib/idStore";
 import ArticleCard from "./ArticleCard";
 import MultiSelect from "./MultiSelect";
 import { downloadFile, stamp, toBibTeX, toRIS } from "@/lib/export";
+import { describeSearch, lensStore } from "@/lib/lensStore";
+import { parseFilters, serializeFilters, urlStore } from "@/lib/urlState";
 
 export default function Feed({ feed }: { feed: FeedResult }) {
   const articles = useMemo(() => decorate(feed.articles), [feed.articles]);
 
-  const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
+  // Filters live in the URL, not in component state, so any set of them is a
+  // link you can paste to someone — which is what makes a lens shareable with
+  // no server behind it. Back/forward step through filter changes too.
+  const search = useSyncExternalStore(
+    urlStore.subscribe,
+    urlStore.getSnapshot,
+    urlStore.getServerSnapshot,
+  );
+  const filters = useMemo(() => parseFilters(search), [search]);
+
+  const setFilters = useCallback(
+    (next: FilterState | ((prev: FilterState) => FilterState)) => {
+      const value =
+        typeof next === "function" ? next(parseFilters(window.location.search)) : next;
+      urlStore.set(serializeFilters(value));
+    },
+    [],
+  );
+
+  const customLenses = useSyncExternalStore(
+    lensStore.subscribe,
+    lensStore.getSnapshot,
+    lensStore.getServerSnapshot,
+  );
+  const [newLensName, setNewLensName] = useState("");
+  const [savingLens, setSavingLens] = useState(false);
+  const [copied, setCopied] = useState(false);
   // Collapsed by default: the full chip set is five rows tall and would push the
   // feed itself below the fold on every visit.
   const [showTopics, setShowTopics] = useState(false);
@@ -44,6 +72,16 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   );
 
   const topicPanelActive = filters.topics.length;
+
+  async function copyShareLink() {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setCopied(false);
+    }
+  }
 
   function deselectAllTopics() {
     setFilters((f) => ({ ...f, topics: [] }));
@@ -148,16 +186,61 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         <section className="panel">
           <div className="panel-head">
             <h2>Saved lenses</h2>
-            {activeLens && (
-              <button className="linkbtn" onClick={() => applyLens(activeLens.id)}>
-                Clear lens
+            <div className="right">
+              <button className="linkbtn" onClick={copyShareLink}>
+                {copied ? "Link copied" : "Copy link to these filters"}
               </button>
-            )}
+              <button
+                className="btn btn-quiet"
+                disabled={active === 0}
+                onClick={() => setSavingLens((v) => !v)}
+              >
+                Save current filters as a lens
+              </button>
+            </div>
           </div>
           <p className="hint">
-            One click applies a whole set of topics at once. Edit or add your own in{" "}
-            <span className="mono">lib/topics.ts</span>.
+            One click applies a whole set of filters. The first six ship with the
+            app; anything you save is your own and stays in this browser. To move
+            one to another device or send it to someone, use{" "}
+            <b>Copy link to these filters</b> — a lens is just a link.
           </p>
+
+          {savingLens && (
+            <form
+              className="lensform"
+              onSubmit={(e) => {
+                e.preventDefault();
+                lensStore.add(newLensName, serializeFilters(filters));
+                setNewLensName("");
+                setSavingLens(false);
+              }}
+            >
+              <input
+                autoFocus
+                value={newLensName}
+                onChange={(e) => setNewLensName(e.target.value)}
+                placeholder="Name this lens, e.g. Parent training trials"
+                maxLength={48}
+                aria-label="Lens name"
+              />
+              <button className="btn" type="submit" disabled={!newLensName.trim()}>
+                Save lens
+              </button>
+              <button
+                className="btn btn-quiet"
+                type="button"
+                onClick={() => {
+                  setSavingLens(false);
+                  setNewLensName("");
+                }}
+              >
+                Cancel
+              </button>
+              <span className="filter-summary">Saves: {describeSearch(filters)}</span>
+            </form>
+          )}
+
           <div className="lensrow">
             {LENSES.map((l) => (
               <button
@@ -170,6 +253,29 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 <span>{l.blurb}</span>
               </button>
             ))}
+
+            {customLenses.map((l) => {
+              const on = l.search === search.replace(/^\?/, "");
+              return (
+                <div key={l.id} className="lens lens-custom" data-on={on}>
+                  <button
+                    className="lens-apply"
+                    onClick={() => urlStore.set(on ? "" : l.search)}
+                  >
+                    <strong>{l.label}</strong>
+                    <span>{describeSearch(parseFilters(l.search))}</span>
+                  </button>
+                  <button
+                    className="lens-delete"
+                    aria-label={`Delete the ${l.label} lens`}
+                    title="Delete this lens"
+                    onClick={() => lensStore.remove(l.id)}
+                  >
+                    ×
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </section>
 

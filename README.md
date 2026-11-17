@@ -1,6 +1,6 @@
 # Research Digest
 
-A personal feed of everything published in the last 30 days across 23 child,
+A personal feed of everything published in the last 30 days across 34 child,
 family, and clinical psychology journals. Data comes from
 [OpenAlex](https://openalex.org). Styling comes from `../personal-brand-kit`.
 
@@ -28,7 +28,7 @@ in it. So a paper titled *"Stimulant response in school-aged children"* shows up
 under the ADHD chip even though it never says ADHD.
 
 The chips in `lib/topics.ts` were not invented. They came from asking OpenAlex
-which topics actually occur in these 23 journals over the last 12 months:
+which topics actually occur in these 34 journals over the last 12 months:
 
 ```bash
 curl "https://api.openalex.org/works?filter=primary_location.source.id:S108595589|S60711021,from_publication_date:2025-11-16&group_by=topics.id&per-page=200"
@@ -96,7 +96,16 @@ curl "https://api.openalex.org/topics?search=school+refusal&select=id,display_na
 
 **Change the window** — `WINDOW_DAYS` in `lib/openalex.ts` (currently 30).
 
-**Add a lens** — `LENSES` in `lib/topics.ts`.
+**Add a lens** — two ways now. In the app, set some filters and press *Save
+current filters as a lens*; it is stored in your browser under
+`research-feed.lenses.v1` and is yours alone. `LENSES` in `lib/topics.ts` holds
+the six that ship with the app and are the same for everyone.
+
+**Filters live in the URL**, not in component state (`lib/urlState.ts`). That is
+what makes a lens shareable with no server: *Copy link to these filters* gives a
+URL that opens with exactly those filters applied, so a lens travels to another
+device, or to a colleague, as a link. Back/forward step through filter changes
+too.
 
 **Sorting** — the toolbar's Sort control switches between *Newest first* (the
 weekly buckets) and *Unread first*, which replaces those buckets with two

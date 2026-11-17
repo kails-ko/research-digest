@@ -1004,3 +1004,92 @@ button {
   color: var(--muted);
   max-width: 76ch;
 }
+
+/* ------------------------------------------------------- custom lenses */
+
+.lensform {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  background: var(--ground);
+}
+
+.lensform input {
+  flex: 1 1 280px;
+  font-family: var(--ui);
+  font-size: 0.9rem;
+  color: var(--navy);
+  background: var(--ground);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+  padding: 7px 11px;
+}
+
+.lensform input:focus {
+  border-color: var(--indigo);
+}
+
+/* A lens you saved: the card is a button plus a delete control, so unlike the
+   built-in lenses it is a div wrapping two buttons rather than one button. */
+.lens-custom {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.lens-apply {
+  flex: 1;
+  text-align: left;
+  background: none;
+  border: 0;
+  color: inherit;
+  padding: 10px 4px 10px 14px;
+}
+
+.lens-apply strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 0.95rem;
+  color: var(--indigo);
+}
+
+.lens-apply span {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.lens-custom[data-on="true"] {
+  background: var(--amber);
+  border-color: var(--amber);
+}
+
+.lens-custom[data-on="true"] .lens-apply strong,
+.lens-custom[data-on="true"] .lens-apply span {
+  color: var(--navy);
+}
+
+.lens-delete {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 10px 12px 10px 6px;
+}
+
+.lens-delete:hover {
+  color: var(--red);
+}
+
+.lens-custom[data-on="true"] .lens-delete {
+  color: var(--navy);
+}

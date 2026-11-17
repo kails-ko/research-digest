@@ -40,6 +40,24 @@ export const JOURNALS: Journal[] = [
   { id: "S50147421", name: "Journal of Family Psychology", issn: "0893-3200" },
   { id: "S137373642", name: "Child Psychiatry & Human Development", issn: "0009-398X" },
   { id: "S186589312", name: "Behaviour Research and Therapy", issn: "0005-7967" },
+
+  // Added after a gap review against these 23: high-impact journals covering
+  // the same ground. "Journal of Abnormal Psychology" is deliberately absent —
+  // it was renamed Journal of Psychopathology and Clinical Science in 2022,
+  // which is the entry below. Journal of Abnormal Child Psychology is likewise
+  // already here under its current name, Research on Child and Adolescent
+  // Psychopathology.
+  { id: "S4210191519", name: "Journal of Psychopathology and Clinical Science", issn: "2769-7541" },
+  { id: "S126635229", name: "Developmental Psychology", issn: "0012-1649" },
+  { id: "S53055215", name: "Child Abuse & Neglect", issn: "0145-2134" },
+  { id: "S126644992", name: "Journal of Youth and Adolescence", issn: "0047-2891" },
+  { id: "S2764897075", name: "Clinical Psychological Science", issn: "2167-7026" },
+  { id: "S35369596", name: "Psychological Assessment", issn: "1040-3590" },
+  { id: "S4632444", name: "Clinical Psychology Review", issn: "0272-7358" },
+  { id: "S69627091", name: "Journal of School Psychology", issn: "0022-4405" },
+  { id: "S44167674", name: "Journal of Pediatric Psychology", issn: "0146-8693" },
+  { id: "S114141255", name: "Early Childhood Research Quarterly", issn: "0885-2006" },
+  { id: "S125441779", name: "Child Maltreatment", issn: "1077-5595" },
 ];
 
 export const JOURNALS_BY_ID = new Map(JOURNALS.map((j) => [j.id, j]));
