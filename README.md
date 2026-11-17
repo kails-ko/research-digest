@@ -58,6 +58,11 @@ as OpenAlex *keywords*, so those chips match keyword strings instead. They are
 marked `kind: "keyword"` in `lib/topics.ts` with the exact strings listed, and
 they are only as good as the keywords publishers supply.
 
+**How chips combine** — all topic chips OR together, whichever group they sit
+in, so picking more of them *widens* the feed. The Journals and "Hot this
+month" lists are separate layers and AND with the topics: an article has to
+match something in every layer you have used.
+
 ### 2. "Hot this month" — self-refreshing vocabulary
 
 OpenAlex also attaches free-form **keywords** to most works (~97% of this
@@ -165,6 +170,15 @@ ever want your own, get one at <https://openalex.org/settings/api> and set
 nothing else changes.
 
 ---
+
+## New since your last visit
+
+`lib/visitStore.ts` stores the set of article IDs present at the end of each
+visit and diffs against it on the next one. It deliberately does **not**
+compare publication dates to a timestamp: OpenAlex indexes many articles days
+or weeks after their publication date, so a paper dated last week can be new to
+the feed today. A genuine first visit reports nothing rather than claiming
+every article is new.
 
 ## Sending articles to Zotero
 

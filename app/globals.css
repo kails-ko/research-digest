@@ -1124,3 +1124,38 @@ button {
 .lens-custom[data-on="true"] .lens-edit {
   color: var(--navy);
 }
+
+/* --------------------------------------------------- new since last visit */
+
+.newbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  border-radius: var(--radius);
+  background: var(--light-blue);
+  color: var(--navy);
+}
+
+.newbar .newcount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.newbar .btn-quiet {
+  border-color: var(--navy);
+  color: var(--navy);
+}
+
+.newbar .btn-quiet:hover {
+  background: color-mix(in srgb, var(--navy) 10%, transparent);
+}
+
+.newbar .btn[data-on="true"] {
+  background: var(--navy);
+  color: var(--ground);
+  border-color: var(--navy);
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import type { FeedResult } from "@/lib/openalex";
 import {
   EMPTY_FILTERS,
@@ -21,6 +21,7 @@ import MultiSelect from "./MultiSelect";
 import { downloadFile, stamp, toBibTeX, toRIS } from "@/lib/export";
 import { describeSearch, lensStore } from "@/lib/lensStore";
 import { parseFilters, serializeFilters, urlStore } from "@/lib/urlState";
+import { formatVisitDate, visitStore } from "@/lib/visitStore";
 
 export default function Feed({ feed }: { feed: FeedResult }) {
   const articles = useMemo(() => decorate(feed.articles), [feed.articles]);
@@ -54,6 +55,18 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     lensStore.getOverrides,
     lensStore.getServerOverrides,
   );
+  const visit = useSyncExternalStore(
+    visitStore.subscribe,
+    visitStore.getSnapshot,
+    visitStore.getServerSnapshot,
+  );
+
+  // Hand the current article IDs to the visit store once they exist. This is a
+  // genuine external-system sync — it reads and writes localStorage — which is
+  // what an effect is for.
+  useEffect(() => {
+    visitStore.prime(articles.map((a) => a.id));
+  }, [articles]);
   const [newLensName, setNewLensName] = useState("");
   /** null = closed, "new" = saving a new lens, otherwise the lens id being edited. */
   const [editing, setEditing] = useState<string | null>(null);
@@ -62,6 +75,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   // feed itself below the fold on every visit.
   const [showTopics, setShowTopics] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showNewOnly, setShowNewOnly] = useState(false);
 
   // What you've read and saved lives in localStorage, which React treats as an
   // external store. The server snapshot is deliberately empty — the server has
@@ -104,10 +118,12 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   }
 
 
-  const visible = useMemo(
-    () => applyFilters(articles, filters, seen, saved),
-    [articles, filters, seen, saved],
-  );
+  const visible = useMemo(() => {
+    const matched = applyFilters(articles, filters, seen, saved);
+    if (!showNewOnly || visit.newIds.length === 0) return matched;
+    const isNew = new Set(visit.newIds);
+    return matched.filter((a) => isNew.has(a.id));
+  }, [articles, filters, seen, saved, showNewOnly, visit.newIds]);
 
   const topicCounts = useMemo(
     () => chipCounts(articles, filters, seen, saved, "topics"),
@@ -168,9 +184,9 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           <p className="kicker">Child, family, &amp; clinical psychology</p>
           <h1>Research Digest</h1>
           <p className="sub">
-            Everything published in the last 30 days across {JOURNALS.length} journals,
-            pulled from OpenAlex. Filter by clicking — the topics below come from
-            OpenAlex&rsquo;s own classification of each article.
+            Your personal research feed of everything published within the last 30
+            days. Covers {JOURNALS.length} journals on child and adolescent
+            psychology, pulled from OpenAlex.
           </p>
           <div className="statbar">
             <span className="stat">
@@ -194,6 +210,31 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           <div className="notice">
             <strong>OpenAlex didn&rsquo;t answer.</strong> {feed.error} The feed will try
             again on the next page load.
+          </div>
+        )}
+
+        {visit.newIds.length > 0 && (
+          <div className="newbar">
+            <span className="newcount mono">{visit.newIds.length}</span>
+            <span>
+              new since your last visit
+              {visit.lastVisitAt && ` (${formatVisitDate(visit.lastVisitAt)})`}
+            </span>
+            <button
+              className="btn btn-quiet"
+              onClick={() =>
+                setFilters((f) => ({ ...EMPTY_FILTERS, status: f.status, sort: f.sort }))
+              }
+            >
+              Show all {articles.length}
+            </button>
+            <button
+              className="btn"
+              data-on={showNewOnly}
+              onClick={() => setShowNewOnly((v) => !v)}
+            >
+              {showNewOnly ? "Showing only new" : "Show only these"}
+            </button>
           </div>
         )}
 
@@ -350,11 +391,15 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           {/* The description sits outside the collapsible region so it explains
               the section even while the chips are hidden. */}
           <p className="hint">
-            These are OpenAlex Topics, not word searches — an article is tagged
+            Mostly OpenAlex Topics rather than word searches — an article is tagged
             &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not it
-            uses the word. The number on each chip is how many of this
-            month&rsquo;s articles it would bring in. Within a row, chips add up
-            (<b>or</b>). Across rows, they narrow (<b>and</b>).
+            uses the word. The number on each chip is how many of this month&rsquo;s
+            articles carry it.{" "}
+            <b>Picking more chips here widens the feed, it doesn&rsquo;t narrow it</b>
+            {" "}— an article only has to match <b>one</b> of them, whichever rows
+            they came from. The <b>Journals</b> and <b>Hot this month</b> lists are
+            what narrow it: an article has to match something in every list
+            you&rsquo;ve used.
           </p>
 
           {/* Kept mounted but hidden, so chip state and scroll position survive
