@@ -68,6 +68,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     visitStore.prime(articles.map((a) => a.id));
   }, [articles]);
   const [newLensName, setNewLensName] = useState("");
+  const [newLensBlurb, setNewLensBlurb] = useState("");
+  /** When editing an existing lens, whether to also re-point it at the
+      current filters. Off by default: renaming a lens or fixing its
+      description should not silently replace what it filters on. */
+  const [repoint, setRepoint] = useState(false);
+  /** Phones only: reveals the per-lens edit/delete controls. */
+  const [editingLenses, setEditingLenses] = useState(false);
   /** null = closed, "new" = saving a new lens, otherwise the lens id being edited. */
   const [editing, setEditing] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -163,7 +170,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     const defaults = LENSES.filter((l) => !overrides[l.id]?.hidden).map((l) => ({
       id: l.id,
       label: overrides[l.id]?.label ?? l.label,
-      blurb: overrides[l.id]?.search ? undefined : l.blurb,
+      blurb: overrides[l.id]?.blurb || l.blurb,
       search:
         overrides[l.id]?.search ??
         serializeFilters({
@@ -176,7 +183,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     const mine = customLenses.map((l) => ({
       id: l.id,
       label: l.label,
-      blurb: undefined,
+      blurb: l.blurb,
       search: l.search,
       isDefault: false,
     }));
@@ -238,8 +245,15 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               >
                 Restore default lenses
               </button>
+              <button
+                className="linkbtn lens-editmode"
+                aria-pressed={editingLenses}
+                onClick={() => setEditingLenses((v) => !v)}
+              >
+                {editingLenses ? "Done" : "Edit lenses"}
+              </button>
               <button className="linkbtn" onClick={copyShareLink}>
-                {copied ? "Link copied" : "Copy link to these filters"}
+                {copied ? "Link copied" : "Share link to saved filters"}
               </button>
               <button
                 className="btn btn-quiet"
@@ -247,15 +261,16 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 onClick={() => {
                   setEditing("new");
                   setNewLensName("");
+                  setNewLensBlurb("");
                 }}
               >
-                Save current filters as a lens
+                Save filters as lens
               </button>
             </div>
           </div>
           <p className="hint">
             One click applies a whole set of filters. To move a lens to another
-            device or send it to someone, use <b>Copy link to these filters</b>: a
+            device or send it to someone, use <b>Share link to saved filters</b>: a
             lens is just a link.
           </p>
 
@@ -266,19 +281,25 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 e.preventDefault();
                 const name = newLensName.trim();
                 if (!name) return;
+                const blurb = newLensBlurb.trim();
+                const existing = allLenses.find((l) => l.id === editing);
+                // Only replace the filters when explicitly asked to.
+                const search =
+                  editing === "new" || repoint
+                    ? serializeFilters(filters)
+                    : (existing?.search ?? serializeFilters(filters));
                 if (editing === "new") {
-                  lensStore.add(name, serializeFilters(filters));
+                  lensStore.add(name, search, blurb);
                 } else if (editing.startsWith("custom-")) {
                   lensStore.remove(editing);
-                  lensStore.add(name, serializeFilters(filters));
+                  lensStore.add(name, search, blurb);
                 } else {
-                  lensStore.editDefault(editing, {
-                    label: name,
-                    search: serializeFilters(filters),
-                  });
+                  lensStore.editDefault(editing, { label: name, blurb, search });
                 }
                 setEditing(null);
                 setNewLensName("");
+                setNewLensBlurb("");
+
               }}
             >
               <input
@@ -289,6 +310,14 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 maxLength={48}
                 aria-label="Lens name"
               />
+              <input
+                className="lensform-blurb"
+                value={newLensBlurb}
+                onChange={(e) => setNewLensBlurb(e.target.value)}
+                placeholder="Description (optional) — what this lens is for"
+                maxLength={90}
+                aria-label="Lens description"
+              />
               <button className="btn" type="submit" disabled={!newLensName.trim()}>
                 {editing === "new" ? "Save lens" : "Update lens"}
               </button>
@@ -298,24 +327,39 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                 onClick={() => {
                   setEditing(null);
                   setNewLensName("");
+                  setNewLensBlurb("");
+
                 }}
               >
                 Cancel
               </button>
-              <span className="filter-summary">
-                {editing === "new" ? "Saves" : "Re-points it at"}:{" "}
-                {describeSearch(filters)}
-              </span>
+              {editing === "new" ? (
+                <span className="filter-summary">Saves: {describeSearch(filters)}</span>
+              ) : (
+                <label className="repoint">
+                  <input
+                    type="checkbox"
+                    checked={repoint}
+                    onChange={(e) => setRepoint(e.target.checked)}
+                  />
+                  <span>
+                    Also re-point it at the filters on now ({describeSearch(filters)})
+                  </span>
+                </label>
+              )}
             </form>
           )}
 
-          <div className="lensrow">
+          <div className="lensrow" data-editing={editingLenses}>
             {allLenses.map((l) => {
               const on = l.search === currentSearch;
               return (
                 <div key={l.id} className="lens lens-custom" data-on={on}>
                   <button
                     className="lens-apply"
+                    /* Phone pills ellipsise long names, so keep the full one
+                       reachable on hover and long-press. */
+                    title={l.blurb ? `${l.label} — ${l.blurb}` : l.label}
                     onClick={() => urlStore.set(on ? "" : l.search)}
                   >
                     <strong>{l.label}</strong>
@@ -329,6 +373,8 @@ export default function Feed({ feed }: { feed: FeedResult }) {
                       onClick={() => {
                         setEditing(l.id);
                         setNewLensName(l.label);
+                        setNewLensBlurb(l.blurb ?? "");
+                        setRepoint(false);
                       }}
                     >
                       ✎

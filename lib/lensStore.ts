@@ -17,6 +17,8 @@ import type { FilterState } from "./filter";
 export type CustomLens = {
   id: string;
   label: string;
+  /** Your own one-line description. Falls back to a summary of the filters. */
+  blurb?: string;
   /** The filters the lens restores. Stored as a URL query string. */
   search: string;
   createdAt: string;
@@ -32,6 +34,7 @@ const OVERRIDE_KEY = "research-feed.lens-overrides.v1";
  */
 export type LensOverride = {
   label?: string;
+  blurb?: string;
   search?: string;
   hidden?: boolean;
 };
@@ -100,7 +103,7 @@ export const lensStore = {
   getSnapshot: read,
   getServerSnapshot: () => EMPTY,
 
-  add(label: string, search: string) {
+  add(label: string, search: string, blurb?: string) {
     const trimmed = label.trim();
     if (!trimmed) return;
     const next = [
@@ -108,6 +111,7 @@ export const lensStore = {
       {
         id: `custom-${Date.now().toString(36)}`,
         label: trimmed,
+        blurb: blurb?.trim() || undefined,
         search,
         createdAt: new Date().toISOString(),
       },
