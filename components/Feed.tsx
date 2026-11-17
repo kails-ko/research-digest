@@ -75,7 +75,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   // feed itself below the fold on every visit.
   const [showTopics, setShowTopics] = useState(false);
   const [showExport, setShowExport] = useState(false);
-  const [showNewOnly, setShowNewOnly] = useState(false);
 
   // What you've read and saved lives in localStorage, which React treats as an
   // external store. The server snapshot is deliberately empty — the server has
@@ -118,20 +117,20 @@ export default function Feed({ feed }: { feed: FeedResult }) {
   }
 
 
-  const visible = useMemo(() => {
-    const matched = applyFilters(articles, filters, seen, saved);
-    if (!showNewOnly || visit.newIds.length === 0) return matched;
-    const isNew = new Set(visit.newIds);
-    return matched.filter((a) => isNew.has(a.id));
-  }, [articles, filters, seen, saved, showNewOnly, visit.newIds]);
+  const newIdSet = useMemo(() => new Set(visit.newIds), [visit.newIds]);
+
+  const visible = useMemo(
+    () => applyFilters(articles, filters, seen, saved, newIdSet),
+    [articles, filters, seen, saved, newIdSet],
+  );
 
   const topicCounts = useMemo(
-    () => chipCounts(articles, filters, seen, saved, "topics"),
-    [articles, filters, seen, saved],
+    () => chipCounts(articles, filters, seen, saved, "topics", newIdSet),
+    [articles, filters, seen, saved, newIdSet],
   );
   const keywordCounts = useMemo(
-    () => chipCounts(articles, filters, seen, saved, "keywords"),
-    [articles, filters, seen, saved],
+    () => chipCounts(articles, filters, seen, saved, "keywords", newIdSet),
+    [articles, filters, seen, saved, newIdSet],
   );
 
   const suggested = useMemo(() => suggestKeywords(articles), [articles]);
@@ -164,7 +163,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
       id: l.id,
       label: overrides[l.id]?.label ?? l.label,
       blurb: overrides[l.id]?.search ? undefined : l.blurb,
-      search: overrides[l.id]?.search ?? serializeFilters({ ...EMPTY_FILTERS, topics: l.topics }),
+      search:
+        overrides[l.id]?.search ??
+        serializeFilters({
+          ...EMPTY_FILTERS,
+          topics: l.topics,
+          topicMode: l.mode ?? "any",
+        }),
       isDefault: true,
     }));
     const mine = customLenses.map((l) => ({
@@ -194,6 +199,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               <span>articles this month</span>
             </span>
             <span className="stat">
+              <b>{visit.pending || !visit.lastVisitAt ? "—" : visit.newIds.length}</b>
+              <span>
+                new since your last visit
+                {visit.lastVisitAt && ` (${formatVisitDate(visit.lastVisitAt)})`}
+              </span>
+            </span>
+            <span className="stat">
               <b>{saved.size}</b>
               <span>saved</span>
             </span>
@@ -210,39 +222,6 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           <div className="notice">
             <strong>OpenAlex didn&rsquo;t answer.</strong> {feed.error} The feed will try
             again on the next page load.
-          </div>
-        )}
-
-        {/* Shown whenever there has been a previous visit, including when
-            nothing is new — otherwise the feature is invisible on the days it
-            has nothing to report, which is most days. */}
-        {!visit.pending && visit.lastVisitAt && (
-          <div className="newbar" data-empty={visit.newIds.length === 0}>
-            {visit.newIds.length > 0 ? (
-              <>
-                <span className="newcount mono">{visit.newIds.length}</span>
-                <span>
-                  new since your last visit ({formatVisitDate(visit.lastVisitAt)})
-                </span>
-                <button
-                  className="btn"
-                  data-on={showNewOnly}
-                  onClick={() => setShowNewOnly((v) => !v)}
-                >
-                  {showNewOnly ? "Showing only new" : "Show only these"}
-                </button>
-                {showNewOnly && (
-                  <button className="btn btn-quiet" onClick={() => setShowNewOnly(false)}>
-                    Show all {articles.length}
-                  </button>
-                )}
-              </>
-            ) : (
-              <span>
-                Nothing new since your last visit ({formatVisitDate(visit.lastVisitAt)}).
-                New articles will be counted here.
-              </span>
-            )}
           </div>
         )}
 
@@ -420,13 +399,10 @@ export default function Feed({ feed }: { feed: FeedResult }) {
           {/* The description sits outside the collapsible region so it explains
               the section even while the chips are hidden. */}
           <p className="hint">
-            Mostly OpenAlex Topics rather than word searches — an article is tagged
-            &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not it
-            uses the word. <b>Picking more chips here widens the feed, it doesn&rsquo;t narrow it</b>
-            {" "}— an article only has to match <b>one</b> of them, whichever rows
-            they came from. The <b>Journals</b> and <b>Hot this month</b> lists are
-            what narrow it: an article has to match something in every list
-            you&rsquo;ve used.
+            These chips come from OpenAlex&rsquo;s own classification, so an article
+            counts as &ldquo;ADHD&rdquo; whether or not it uses the word. Pick as many
+            as you like — on <b>Any</b> you get everything matching at least one, on{" "}
+            <b>All</b> only what matches every one.
           </p>
 
           {/* Kept mounted but hidden, so chip state and scroll position survive
@@ -517,7 +493,7 @@ export default function Feed({ feed }: { feed: FeedResult }) {
         {/* ------------------------------------------------ toolbar */}
         <div className="toolbar">
           <div className="segmented">
-            {(["all", "unseen", "read", "saved"] as const).map((s) => (
+            {(["all", "new", "unseen", "read", "saved"] as const).map((s) => (
               <button
                 key={s}
                 data-on={filters.status === s}
@@ -525,11 +501,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
               >
                 {s === "all"
                   ? "All"
-                  : s === "unseen"
-                    ? "Unread"
-                    : s === "read"
-                      ? "Read"
-                      : "Saved"}
+                  : s === "new"
+                    ? "New"
+                    : s === "unseen"
+                      ? "Unread"
+                      : s === "read"
+                        ? "Read"
+                        : "Saved"}
               </button>
             ))}
           </div>

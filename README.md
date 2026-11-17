@@ -172,6 +172,18 @@ nothing else changes.
 
 ---
 
+## What a card shows
+
+The tag row under a title holds **only the chips this feed defines** that the
+article matched — both topic chips and keyword chips. OpenAlex topics with no
+chip in `lib/topics.ts` are not shown, which is deliberate: OpenAlex hangs
+several very generic topics ("Psychology and Mental Health") on almost
+everything.
+
+Press **Show abstract** and a second row appears with **all** of OpenAlex's
+keywords for that article, unfiltered — that is where to look for a term the
+chips don't cover.
+
 ## New since your last visit
 
 `lib/visitStore.ts` stores the set of article IDs present at the end of each

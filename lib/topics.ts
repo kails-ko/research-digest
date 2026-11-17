@@ -449,6 +449,8 @@ export type Lens = {
   label: string;
   blurb: string;
   topics: string[];
+  /** "all" means the lens requires every chip, not just one. */
+  mode?: "any" | "all";
 };
 
 export const LENSES: Lens[] = [
@@ -461,8 +463,10 @@ export const LENSES: Lens[] = [
   {
     id: "parent-training",
     label: "Treatments for ADHD",
-    blurb: "ADHD treatment: parent training, psychotherapy, CBT, and digital delivery",
-    topics: ["T10537", "kw:parent-training", "T10214", "kw:cbt", "T13143", "T11519"],
+    blurb: "ADHD articles that are also about psychotherapy",
+    // "all", so this is ADHD *and* treatment rather than either one.
+    topics: ["T10537", "T10214"],
+    mode: "all",
   },
   {
     id: "prevention",
@@ -473,8 +477,9 @@ export const LENSES: Lens[] = [
   {
     id: "trauma",
     label: "Trauma & child welfare",
-    blurb: "Maltreatment, PTSD, family violence, foster care, and adoption",
-    topics: ["T10426", "T10242", "T10380", "T11380"],
+    blurb: "Maltreatment articles that are also about child welfare or adoption",
+    topics: ["T10426", "T11380"],
+    mode: "all",
   },
 ];
 

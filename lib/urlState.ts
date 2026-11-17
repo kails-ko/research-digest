@@ -88,7 +88,10 @@ export function parseFilters(search: string): FilterState {
     journals: list(KEYS.journals),
     access: p.get("oa") === "1" ? "oa" : "any",
     status:
-      status === "unseen" || status === "read" || status === "saved"
+      status === "new" ||
+      status === "unseen" ||
+      status === "read" ||
+      status === "saved"
         ? status
         : "all",
     sort: sort === "unread" ? "unread" : "date",

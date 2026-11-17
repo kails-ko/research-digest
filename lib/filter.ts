@@ -59,7 +59,7 @@ export type FilterState = {
   journals: string[];
   /** "any" keeps everything; "oa" keeps only open-access articles. */
   access: "any" | "oa";
-  status: "all" | "unseen" | "read" | "saved";
+  status: "all" | "new" | "unseen" | "read" | "saved";
   /** "date" keeps the weekly buckets; "unread" puts everything unread first. */
   sort: "date" | "unread";
 };
@@ -94,6 +94,8 @@ export function applyFilters(
   f: FilterState,
   seen: ReadonlySet<string>,
   saved: ReadonlySet<string>,
+  /** Articles that weren't in the feed at the end of the last visit. */
+  newIds: ReadonlySet<string> = new Set(),
 ): Decorated[] {
   return articles.filter((a) => {
     if (f.topics.length) {
@@ -106,6 +108,7 @@ export function applyFilters(
     if (f.keywords.length && !a.keywordKeys.some((k) => f.keywords.includes(k))) return false;
     if (f.journals.length && !f.journals.includes(a.journalId)) return false;
     if (f.access === "oa" && !a.isOA) return false;
+    if (f.status === "new" && !newIds.has(a.id)) return false;
     if (f.status === "unseen" && seen.has(a.id)) return false;
     if (f.status === "read" && !seen.has(a.id)) return false;
     if (f.status === "saved" && !saved.has(a.id)) return false;
@@ -124,8 +127,9 @@ export function chipCounts(
   seen: ReadonlySet<string>,
   saved: ReadonlySet<string>,
   layer: "topics" | "keywords",
+  newIds: ReadonlySet<string> = new Set(),
 ) {
-  const base = applyFilters(articles, { ...f, [layer]: [] }, seen, saved);
+  const base = applyFilters(articles, { ...f, [layer]: [] }, seen, saved, newIds);
   const counts = new Map<string, number>();
   for (const a of base) {
     const keys = layer === "topics" ? a.chipIds : a.keywordKeys;
