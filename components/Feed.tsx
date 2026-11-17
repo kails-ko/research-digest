@@ -8,6 +8,7 @@ import {
   chipCounts,
   countActive,
   decorate,
+  groupByReadStatus,
   groupByRecency,
   suggestKeywords,
   type FilterState,
@@ -91,7 +92,13 @@ export default function Feed({ feed }: { feed: FeedResult }) {
     () => articles.filter((a) => saved.has(a.id)),
     [articles, saved],
   );
-  const groups = useMemo(() => groupByRecency(visible), [visible]);
+  const groups = useMemo(
+    () =>
+      filters.sort === "unread"
+        ? groupByReadStatus(visible, seen)
+        : groupByRecency(visible),
+    [visible, filters.sort, seen],
+  );
   const unseenCount = articles.filter((a) => !seen.has(a.id)).length;
   const active = countActive(filters);
 
@@ -196,17 +203,19 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             </div>
           </div>
 
+          {/* The description sits outside the collapsible region so it explains
+              the section even while the chips are hidden. */}
+          <p className="hint">
+            These are OpenAlex Topics, not word searches — an article is tagged
+            &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not it
+            uses the word. The number on each chip is how many of this
+            month&rsquo;s articles it would bring in. Within a row, chips add up
+            (<b>or</b>). Across rows, they narrow (<b>and</b>).
+          </p>
+
           {/* Kept mounted but hidden, so chip state and scroll position survive
               a collapse — and so the selected count above stays truthful. */}
           <div id="topic-chips" hidden={!showTopics}>
-              <p className="hint">
-                These are OpenAlex Topics, not word searches — an article is tagged
-                &ldquo;ADHD&rdquo; because OpenAlex classified it that way, whether or not
-                it uses the word. The number on each chip is how many of this
-                month&rsquo;s articles it would bring in. Within a row, chips add up
-                (<b>or</b>). Across rows, they narrow (<b>and</b>).
-              </p>
-
             {TOPIC_GROUPS.map((g) => (
               <div key={g.name}>
                 <span className="group-label">{g.name}</span>
@@ -237,55 +246,56 @@ export default function Feed({ feed }: { feed: FeedResult }) {
 
         {/* --------------------------------- keywords + journals, side by side */}
         <div className="panel-row">
-          {suggested.length > 0 && (
-            <section className="panel">
+          <section className="panel">
             <div className="panel-head">
-              <h2>Showing up this month</h2>
+              <h2>Journals</h2>
               <div className="right">
                 <MultiSelect
-                  placeholder="Pick keywords"
-                  noun="keyword"
-                  options={suggested.map((s) => ({
-                    value: s.key,
-                    label: s.label,
-                    count: keywordCounts.get(s.key) ?? 0,
+                  placeholder={`All ${JOURNALS.length} journals`}
+                  noun="journal"
+                  options={JOURNALS.map((j) => ({
+                    value: j.id,
+                    label: j.name,
+                    count: articles.filter((a) => a.journalId === j.id).length,
                   }))}
-                  selected={filters.keywords}
-                  onToggle={(v) => toggleIn("keywords", v)}
-                  onClear={() => setFilters((f) => ({ ...f, keywords: [] }))}
+                  selected={filters.journals}
+                  onToggle={(v) => toggleIn("journals", v)}
+                  onClear={() => setFilters((f) => ({ ...f, journals: [] }))}
                 />
               </div>
             </div>
             <p className="hint">
-              The keywords OpenAlex attached to this month&rsquo;s articles, most common
-              first. This list changes with the feed, so it surfaces terms you
-              wouldn&rsquo;t have thought to search for.
-            </p>
-            </section>
-          )}
-
-          <section className="panel">
-          <div className="panel-head">
-            <h2>Journals</h2>
-            <div className="right">
-              <MultiSelect
-                placeholder={`All ${JOURNALS.length} journals`}
-                noun="journal"
-                options={JOURNALS.map((j) => ({
-                  value: j.id,
-                  label: j.name,
-                  count: articles.filter((a) => a.journalId === j.id).length,
-                }))}
-                selected={filters.journals}
-                onToggle={(v) => toggleIn("journals", v)}
-                onClear={() => setFilters((f) => ({ ...f, journals: [] }))}
-              />
-            </div>
-          </div>
-            <p className="hint">
-              No selection means all of them. Tick a few to narrow the feed.
+              Results from all journals are automatically displayed. Check a few to
+              narrow the feed.
             </p>
           </section>
+
+          {suggested.length > 0 && (
+            <section className="panel">
+              <div className="panel-head">
+                <h2>Hot this month</h2>
+                <div className="right">
+                  <MultiSelect
+                    placeholder="Pick keywords"
+                    noun="keyword"
+                    options={suggested.map((s) => ({
+                      value: s.key,
+                      label: s.label,
+                      count: keywordCounts.get(s.key) ?? 0,
+                    }))}
+                    selected={filters.keywords}
+                    onToggle={(v) => toggleIn("keywords", v)}
+                    onClear={() => setFilters((f) => ({ ...f, keywords: [] }))}
+                  />
+                </div>
+              </div>
+              <p className="hint">
+                The keywords OpenAlex attached to this month&rsquo;s articles, most
+                common first. This list changes with the feed, so it surfaces terms
+                you wouldn&rsquo;t have thought to search for.
+              </p>
+            </section>
+          )}
         </div>
 
         {/* ------------------------------------------------ toolbar */}
@@ -314,6 +324,21 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             >
               Open access only
             </button>
+            <label className="sortby">
+              <span>Sort</span>
+              <select
+                value={filters.sort}
+                onChange={(e) =>
+                  setFilters((f) => ({
+                    ...f,
+                    sort: e.target.value as FilterState["sort"],
+                  }))
+                }
+              >
+                <option value="date">Newest first</option>
+                <option value="unread">Unread first</option>
+              </select>
+            </label>
             <span className="filter-summary">
               <b>{visible.length}</b> of <b>{articles.length}</b> shown
               {active > 0 && ` · ${active} filter${active === 1 ? "" : "s"} on`}
@@ -332,10 +357,32 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             you have saved, not on what the filters are currently showing. */}
         {savedArticles.length > 0 && (
           <div className="exportbar">
-            <span className="filter-summary">
-              <b>{savedArticles.length}</b> saved —{" "}
-              {savedArticles.length === 1 ? "send it" : "send them"} to Zotero:
-            </span>
+            <div className="exporthead">
+              <strong>
+                Send your {savedArticles.length} saved{" "}
+                {savedArticles.length === 1 ? "article" : "articles"} to a reference
+                manager
+              </strong>
+              <p>
+                Download a file here, then import it into your reference manager —
+                it will create a record for each article, with authors, title,
+                journal, year, DOI, abstract, and keywords already filled in.
+              </p>
+              <ol>
+                <li>
+                  Pick a format. <b>RIS</b> works nearly everywhere — Zotero,
+                  EndNote, Mendeley, Papers, RefWorks. <b>BibTeX</b> is for LaTeX
+                  and Overleaf.
+                </li>
+                <li>Download the file. It lands in your Downloads folder.</li>
+                <li>
+                  Import it: <em>Zotero</em> File &rarr; Import; <em>EndNote</em>{" "}
+                  File &rarr; Import &rarr; choose &ldquo;Reference Manager
+                  (RIS)&rdquo;; <em>Mendeley</em> File &rarr; Add Files; most others
+                  have an Import under File.
+                </li>
+              </ol>
+            </div>
             <button
               className="btn btn-quiet"
               onClick={() =>
@@ -360,9 +407,12 @@ export default function Feed({ feed }: { feed: FeedResult }) {
             >
               Download BibTeX
             </button>
-            <span className="exporthint">
-              Zotero: <em>File &rarr; Import</em>, then pick the file.
-            </span>
+            <p className="exporthint">
+              Volume, issue, and page numbers are left out on purpose — for
+              online-first articles those are often wrong or missing in OpenAlex.
+              Your reference manager can fill them in from the DOI (in Zotero,
+              right-click &rarr; <em>Update metadata</em>).
+            </p>
           </div>
         )}
 

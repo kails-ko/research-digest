@@ -607,9 +607,13 @@ button {
   color: var(--navy);
 }
 
+/* A tag that matches a chip you have selected. Amber — the kit's Action
+   color — so the thing you picked reads as active rather than as just another
+   category swatch. Navy text, per the kit's text-color rule. */
 .tag[data-match="true"] {
-  background: var(--light-blue);
-  border-color: var(--light-blue);
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--navy);
   font-weight: 700;
 }
 
@@ -823,7 +827,8 @@ button {
 }
 
 .ms-row[data-on="true"] {
-  background: var(--light-blue);
+  background: var(--amber);
+  color: var(--navy);
   font-weight: 700;
 }
 
@@ -913,4 +918,78 @@ button {
   font-style: normal;
   font-family: var(--mono);
   font-size: 0.76rem;
+}
+
+/* ------------------------------------------------------------- sort select */
+
+.sortby {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.sortby select {
+  font-family: var(--ui);
+  font-size: 0.85rem;
+  color: var(--navy);
+  background: var(--ground);
+  border: 1.5px solid var(--rule-strong);
+  border-radius: var(--radius);
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.sortby select:hover {
+  border-color: var(--indigo);
+}
+
+/* ------------------------------------------------- export bar, expanded */
+
+.exportbar {
+  display: block;
+}
+
+.exporthead strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 1rem;
+  color: var(--indigo);
+  margin-bottom: 4px;
+}
+
+.exporthead p {
+  margin: 0 0 8px;
+  font-size: 0.86rem;
+  color: var(--navy);
+  max-width: 76ch;
+}
+
+.exporthead ol {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  font-size: 0.86rem;
+  max-width: 76ch;
+}
+
+.exporthead li {
+  margin-bottom: 4px;
+}
+
+.exporthead em,
+.exporthint em {
+  font-style: normal;
+  font-weight: 700;
+}
+
+.exportbar .btn {
+  margin-right: 10px;
+}
+
+.exportbar .exporthint {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  max-width: 76ch;
 }

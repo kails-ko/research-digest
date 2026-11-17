@@ -56,6 +56,8 @@ export type FilterState = {
   /** "any" keeps everything; "oa" keeps only open-access articles. */
   access: "any" | "oa";
   status: "all" | "unseen" | "saved";
+  /** "date" keeps the weekly buckets; "unread" puts everything unread first. */
+  sort: "date" | "unread";
 };
 
 export const EMPTY_FILTERS: FilterState = {
@@ -64,6 +66,7 @@ export const EMPTY_FILTERS: FilterState = {
   journals: [],
   access: "any",
   status: "all",
+  sort: "date",
 };
 
 export function countActive(f: FilterState): number {
@@ -116,6 +119,20 @@ export function chipCounts(
     for (const k of new Set(keys)) counts.set(k, (counts.get(k) ?? 0) + 1);
   }
   return counts;
+}
+
+/**
+ * Group everything unread ahead of everything already read, each half still
+ * newest-first. Used instead of the weekly buckets when sorting by read status,
+ * because an article's read state cuts across weeks.
+ */
+export function groupByReadStatus(articles: Decorated[], seen: ReadonlySet<string>) {
+  const unread = articles.filter((a) => !seen.has(a.id));
+  const read = articles.filter((a) => seen.has(a.id));
+  return [
+    { label: "Unread", items: unread },
+    { label: "Already read", items: read },
+  ].filter((g) => g.items.length > 0);
 }
 
 /** Group by ISO week-ish buckets, newest first, for the date headers. */

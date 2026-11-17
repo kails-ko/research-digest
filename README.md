@@ -51,7 +51,7 @@ as OpenAlex *keywords*, so those chips match keyword strings instead. They are
 marked `kind: "keyword"` in `lib/topics.ts` with the exact strings listed, and
 they are only as good as the keywords publishers supply.
 
-### 2. "Showing up this month" — self-refreshing vocabulary
+### 2. "Hot this month" — self-refreshing vocabulary
 
 OpenAlex also attaches free-form **keywords** to most works (~97% of this
 month's set). The app counts them across whatever came back and offers the most
@@ -97,6 +97,10 @@ curl "https://api.openalex.org/topics?search=school+refusal&select=id,display_na
 **Change the window** — `WINDOW_DAYS` in `lib/openalex.ts` (currently 30).
 
 **Add a lens** — `LENSES` in `lib/topics.ts`.
+
+**Sorting** — the toolbar's Sort control switches between *Newest first* (the
+weekly buckets) and *Unread first*, which replaces those buckets with two
+groups, Unread and Already read, since read status cuts across weeks.
 
 **Note on the five topic category headings** (Conditions & presenting problems,
 Family & caregiving, and so on): those are *hand-made in `lib/topics.ts`*, not
