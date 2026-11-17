@@ -109,10 +109,7 @@ export default function ArticleCard({
           <p className="abstract">{a.abstract}</p>
         ) : (
           <p className="abstract">
-            <em>
-              No abstract in OpenAlex for this one — many publishers withhold them.
-              The DOI link below goes to the publisher&rsquo;s page.
-            </em>
+            <em>No abstract in OpenAlex. Check the DOI link.</em>
           </p>
         ))}
 

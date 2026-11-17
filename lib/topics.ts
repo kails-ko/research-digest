@@ -123,6 +123,19 @@ export const TOPIC_GROUPS: TopicGroup[] = [
       },
       { id: "T10106", label: "Autism", openAlexName: "Autism Spectrum Disorder Research" },
       { id: "T10426", label: "Abuse & maltreatment", openAlexName: "Child Abuse and Trauma" },
+      {
+        // A separate OpenAlex topic from "Child Abuse and Trauma" above, despite
+        // the near-identical name — 166 works in these journals over two years
+        // were being hidden because no chip claimed it.
+        id: "T12235",
+        label: "Abuse-related trauma",
+        openAlexName: "Child Abuse and Related Trauma",
+      },
+      {
+        id: "T11548",
+        label: "Sexual assault & victimization",
+        openAlexName: "Sexual Assault and Victimization Studies",
+      },
       { id: "T10242", label: "PTSD", openAlexName: "Posttraumatic Stress Disorder Research" },
       { id: "T10376", label: "Suicide & self-harm", openAlexName: "Suicide and Self-Harm Studies" },
       { id: "T11123", label: "OCD", openAlexName: "Obsessive-Compulsive Spectrum Disorders" },
